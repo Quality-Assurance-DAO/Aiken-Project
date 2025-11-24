@@ -1,4 +1,6 @@
-use ./onchain_exports.{DistributionContract, ClaimRedeemer, run_validator}
+use contract/datum.{DistributionContract}
+use contract/redeemer.{ClaimRedeemer}
+use contract/lib.{validate}
 
 /// Primary spending validator entry point compiled by Aiken
 validator milestone_distribution {
@@ -8,7 +10,10 @@ validator milestone_distribution {
     _utxo: OutputReference,
     tx: Transaction
   ) {
-    run_validator(datum, redeemer, tx)
+    when datum {
+      Some(contract) -> validate(contract, redeemer, tx)
+      None -> False
+    }
   }
 }
 
