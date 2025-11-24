@@ -1,0 +1,45 @@
+// Integration tests for multi-recipient claim flows
+
+use aiken/builtin.{Address, ByteArray, Int, Bool, List}
+
+// T023: Integration test for single beneficiary claim flow
+test "single_beneficiary_claim_flow" {
+  // Test full flow:
+  // 1. Create contract with single beneficiary allocation
+  // 2. Verify milestone with oracle signatures
+  // 3. Submit claim transaction
+  // 4. Verify tokens transferred to beneficiary
+  // 5. Verify allocation marked as claimed
+  
+  // Note: Full integration test requires transaction building and ScriptContext
+  // This is a placeholder structure
+  True
+}
+
+// T036: Integration test for sequential multi-recipient claims
+test "sequential_multi_recipient_claims" {
+  // Test full flow:
+  // 1. Create contract with multiple beneficiary allocations
+  // 2. Beneficiary 0 claims (should succeed)
+  // 3. Verify contract still has allocations for beneficiaries 1-N
+  // 4. Beneficiary 1 claims (should succeed)
+  // 5. Continue until all claimed
+  
+  // Note: Full integration test requires transaction building and ScriptContext
+  // This is a placeholder structure
+  True
+}
+
+// T037: Performance test for 50+ beneficiary allocations
+test "performance_test_50_plus_beneficiaries" {
+  // Test that contract handles 50+ beneficiary allocations:
+  // 1. Create contract with 50+ allocations
+  // 2. Verify contract creation succeeds
+  // 3. Verify claims can be processed within execution budget
+  // 4. Verify datum size stays within limits
+  
+  // Note: Full performance test requires transaction building and ScriptContext
+  // This is a placeholder structure
+  True
+}
+

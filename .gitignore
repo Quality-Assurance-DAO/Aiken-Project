@@ -1,0 +1,49 @@
+# Aiken build artifacts
+build/
+*.plutus
+*.plutus.json
+
+# Rust/Cargo (Aiken is built with Rust)
+target/
+Cargo.lock
+*.rs.bk
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.key
+*.skey
+*.vkey
+
+# Logs
+*.log
+*.log.*
+
+# Test artifacts
+test-data/*.json
+!test-data/allocations.example.json
+!test-data/oracles.example.json
+
+# Transaction files
+*.unsigned
+*.signed
+tx.*
+
+# Coverage reports
+coverage/
+*.prof*
+
+# Temporary files
+*.tmp
+*.bak
+*.cache
+
