@@ -5,6 +5,16 @@
 **Status**: Draft  
 **Input**: User description: "Develop a milestone-based token distribution system on Cardano testnet using Aiken, building on the QA‑DAO Token Distribution Framework (https://github.com/Quality-Assurance-DAO/Token-Distribution-Framework ) which structures treasury funding and token allocations across multiple stakeholder groups based on governance-approved milestones and quality-assurance metrics. First, implement the validator, datum, and redeemer in Aiken to handle multi-recipient allocations, oracle-based milestone verification, and quorum enforcement. Simulate oracle signatures locally using test keys and include them in the datum to test quorum logic. Mint test tokens on the testnet and create off-chain scripts or CLI commands to submit claim transactions for each beneficiary, enforcing timestamp/vesting constraints and correct token amounts. Iteratively test multi-recipient claims, double claims, invalid signatures, quorum failures, and timestamp enforcement. Monitor testnet transactions to verify outputs and refine contract logic. Once testing is complete, prepare for mainnet deployment by replacing simulated oracle signatures with real oracle nodes and test tokens with production token policy IDs, ensuring the off-chain scripts handle real ADA fees and token transfers."
 
+## Clarifications
+
+### Session 2025-01-27
+
+- Q: When oracle signatures are invalid, missing, or fail verification during a claim transaction, how should the system respond? → A: Reject the claim and require retry with valid signatures
+- Q: How should transaction fees be handled when a beneficiary claims tokens? → A: Beneficiary pays fees from their own wallet balance (standard Cardano behavior)
+- Q: How should the system handle simultaneous claim attempts from multiple beneficiaries for the same milestone? → A: Process sequentially; first valid claim succeeds, others fail validation (Cardano's natural ordering)
+- Q: What should happen when a beneficiary's address is invalid or unspendable? → A: Reject transaction at validation; prevent contract creation with invalid addresses
+- Q: What should happen when a claim transaction is submitted but the distribution contract has insufficient tokens? → A: Reject claim transaction; require contract to hold full allocation before creation
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Beneficiary Claims Tokens After Milestone Verification (Priority: P1)
@@ -75,15 +85,16 @@ The system prevents beneficiaries from claiming tokens before their vesting peri
 
 ### Edge Cases
 
-- What happens when a beneficiary's address is invalid or unspendable?
-- How does the system handle claims when the contract has insufficient tokens (due to previous claims or errors)?
-- What happens if oracle signatures are provided but the milestone identifier doesn't match any allocation?
-- How does the system handle simultaneous claims from multiple beneficiaries for the same milestone?
+- What happens when a beneficiary's address is invalid or unspendable? → System rejects contract creation if invalid addresses are detected; claim transactions also validate address validity and reject if invalid
+- How does the system handle claims when the contract has insufficient tokens (due to previous claims or errors)? → System rejects claim transaction; contract creation must validate that sufficient tokens are held for all allocations before allowing creation
+- What happens if oracle signatures are provided but the milestone identifier doesn't match any allocation? → System rejects the transaction immediately; beneficiary must resubmit with matching milestone identifier
+- How does the system handle invalid, missing, or failed oracle signature verification? → System rejects the claim transaction immediately and requires retry with valid signatures
+- How does the system handle simultaneous claims from multiple beneficiaries for the same milestone? → System processes claims sequentially per Cardano's block ordering; first valid claim succeeds and marks allocation as claimed, subsequent attempts fail double-claim validation
 - What happens when a claim transaction includes incorrect token amounts (more or less than allocated)?
 - How does the system handle claims when the required quorum threshold changes after contract creation?
 - What happens if a beneficiary's allocation amount is zero or negative?
 - How does the system handle vesting timestamps that are in the past at contract creation time?
-- What happens when transaction fees exceed the allocated token amount?
+- What happens when transaction fees exceed the allocated token amount? → Not applicable; fees are paid separately by beneficiary from their wallet balance, not deducted from token allocation
 - How does the system handle partial claims if supported, or enforce all-or-nothing claims?
 
 ## Requirements *(mandatory)*
@@ -95,15 +106,21 @@ The system prevents beneficiaries from claiming tokens before their vesting peri
 - **FR-003**: System MUST support multiple beneficiary allocations within a single distribution contract
 - **FR-004**: System MUST enforce vesting timestamps to prevent claims before the specified time
 - **FR-005**: System MUST prevent double-claiming by tracking which beneficiaries have already claimed for each milestone
+- **FR-005a**: System MUST handle concurrent claim attempts by processing them sequentially (first valid claim succeeds, subsequent attempts fail validation)
 - **FR-006**: System MUST validate that claim transactions include the correct beneficiary address matching the allocation
+- **FR-006a**: System MUST validate that beneficiary addresses are valid and spendable, rejecting contract creation and claim transactions with invalid addresses
 - **FR-007**: System MUST validate that claim transactions include the correct token amount matching the allocation
+- **FR-007a**: System MUST validate that the distribution contract holds sufficient tokens for the claimed allocation before processing the claim, rejecting claims when balance is insufficient
+- **FR-007b**: System MUST validate at contract creation that sufficient tokens are held for all beneficiary allocations before allowing contract creation
 - **FR-008**: System MUST validate that claim transactions include the correct milestone identifier
 - **FR-009**: System MUST ignore unauthorized oracle signatures when calculating quorum
 - **FR-010**: System MUST count duplicate signatures from the same oracle only once toward quorum
 - **FR-011**: System MUST reject claims when the required quorum threshold is not met
+- **FR-011a**: System MUST reject claim transactions immediately when oracle signatures are invalid, missing, or fail verification, requiring beneficiaries to resubmit with corrected oracle data
 - **FR-012**: System MUST handle testnet deployment with simulated oracle signatures for testing purposes
 - **FR-013**: System MUST support off-chain scripts or CLI commands to construct and submit claim transactions
-- **FR-014**: System MUST validate that transactions include sufficient ADA for fees
+- **FR-014**: System MUST validate that transactions include sufficient ADA for fees from the beneficiary's wallet balance
+- **FR-014a**: System MUST ensure beneficiaries receive their full allocated token amount (fees are paid separately by beneficiary, not deducted from allocation)
 - **FR-015**: System MUST support monitoring and verification of testnet transactions for testing purposes
 - **FR-016**: System MUST be designed to transition from testnet simulated oracles to mainnet real oracle nodes
 - **FR-017**: System MUST support replacing test token policy IDs with production token policy IDs for mainnet deployment
@@ -146,7 +163,7 @@ The system prevents beneficiaries from claiming tokens before their vesting peri
 - Token amounts are specified in the smallest unit of the token (e.g., lovelace for ADA)
 - Testnet testing uses simulated oracle signatures generated from test keys for development purposes
 - Mainnet deployment will use real oracle nodes that provide cryptographic signatures through established oracle infrastructure
-- Transaction fees are paid in ADA (native currency) and deducted from the transaction, not from allocated token amounts
+- Transaction fees are paid in ADA (native currency) by the beneficiary from their own wallet balance, not deducted from allocated token amounts
 - The system assumes beneficiaries have Cardano-compatible wallets capable of submitting transactions
 - Milestone identifiers are unique strings or numbers that unambiguously identify specific project milestones
 - The quorum threshold is expressed as "at least N of M oracles" where N and M are integers set at contract creation
