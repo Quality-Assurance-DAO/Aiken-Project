@@ -1,6 +1,6 @@
 {
   "preamble": {
-    "title": "your-org/milestone-token-distribution",
+    "title": "your_org/milestone_token_distribution",
     "description": "Milestone-based token distribution system on Cardano",
     "version": "0.1.0",
     "plutusVersion": "v3",
@@ -9,5 +9,61 @@
       "version": "v1.1.19+unknown"
     }
   },
-  "validators": []
+  "validators": [
+    {
+      "title": "example.example.spend",
+      "datum": {
+        "title": "_datum",
+        "schema": {
+          "$ref": "#/definitions/Int"
+        }
+      },
+      "redeemer": {
+        "title": "_redeemer",
+        "schema": {
+          "$ref": "#/definitions/Int"
+        }
+      },
+      "compiledCode": "585d01010029800aba2aba1aab9eaab9dab9a4888896600264646644b30013370e900118031baa0028994c004c02400660126014003375a601200891125118039baa0028b200a30063007001300600230060013003375400d149a26cac8009",
+      "hash": "b153634f4741edb2b4bf061a924489ad52f93e7bec3716dd91b2a29a"
+    },
+    {
+      "title": "example.example.else",
+      "redeemer": {
+        "schema": {}
+      },
+      "compiledCode": "585d01010029800aba2aba1aab9eaab9dab9a4888896600264646644b30013370e900118031baa0028994c004c02400660126014003375a601200891125118039baa0028b200a30063007001300600230060013003375400d149a26cac8009",
+      "hash": "b153634f4741edb2b4bf061a924489ad52f93e7bec3716dd91b2a29a"
+    },
+    {
+      "title": "simple.simple.spend",
+      "datum": {
+        "title": "_datum",
+        "schema": {
+          "$ref": "#/definitions/Int"
+        }
+      },
+      "redeemer": {
+        "title": "_redeemer",
+        "schema": {
+          "$ref": "#/definitions/Int"
+        }
+      },
+      "compiledCode": "585d01010029800aba2aba1aab9eaab9dab9a4888896600264646644b30013370e900118031baa0028994c004c02400660126014003375a601200891125118039baa0028b200a30063007001300600230060013003375400d149a26cac8009",
+      "hash": "b153634f4741edb2b4bf061a924489ad52f93e7bec3716dd91b2a29a"
+    },
+    {
+      "title": "simple.simple.else",
+      "redeemer": {
+        "schema": {}
+      },
+      "compiledCode": "585d01010029800aba2aba1aab9eaab9dab9a4888896600264646644b30013370e900118031baa0028994c004c02400660126014003375a601200891125118039baa0028b200a30063007001300600230060013003375400d149a26cac8009",
+      "hash": "b153634f4741edb2b4bf061a924489ad52f93e7bec3716dd91b2a29a"
+    }
+  ],
+  "definitions": {
+    "Int": {
+      "dataType": "integer"
+    }
+  }
 }
