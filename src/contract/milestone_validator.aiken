@@ -1,0 +1,16 @@
+use aiken/transaction.{Transaction, OutputReference}
+use ./datum.{DistributionContract}
+use ./redeemer.{ClaimRedeemer}
+use ./lib.{run_validator}
+
+/// Primary milestone distribution validator entry point
+validator milestone_distribution {
+  spend(
+    datum: Option<DistributionContract>,
+    redeemer: ClaimRedeemer,
+    _utxo: OutputReference,
+    tx: Transaction
+  ) -> Bool {
+    run_validator(datum, redeemer, tx)
+  }
+}

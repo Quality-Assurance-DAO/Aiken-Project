@@ -72,3 +72,17 @@ pub fn validate(
   True
 }
 
+/// Bridge helper for .ak entrypoints so they can reuse shared logic
+pub fn run_validator(
+  datum: Option<DistributionContract>,
+  redeemer: ClaimRedeemer,
+  tx: Transaction
+) -> Bool {
+  let contract = when datum {
+    Some(d) -> d
+    None -> return False
+  }
+
+  validate(contract, redeemer, tx)
+}
+
