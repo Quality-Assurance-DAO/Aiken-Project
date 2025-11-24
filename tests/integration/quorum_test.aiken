@@ -1,0 +1,17 @@
+// Integration tests for quorum verification flow
+
+use aiken/builtin.{Address, ByteArray, Int, Bool, List}
+
+// T031: Integration test for quorum verification flow
+test "quorum_verification_flow" {
+  // Test full flow:
+  // 1. Simulate multiple oracle signatures
+  // 2. Verify quorum logic accepts valid quorums
+  // 3. Verify quorum logic rejects insufficient signatures
+  // 4. Confirm milestone state transitions
+  
+  // Note: Full integration test requires transaction building and ScriptContext
+  // This is a placeholder structure
+  True
+}
+

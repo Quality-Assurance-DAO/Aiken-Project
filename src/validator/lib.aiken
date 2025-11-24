@@ -1,0 +1,73 @@
+// Main validator logic for milestone-based token distribution
+
+use aiken/builtin.{Address, ByteArray, Int, Bool, List, ScriptContext}
+use ./datum.{DistributionContract, BeneficiaryAllocation}
+use ./redeemer.{ClaimRedeemer}
+use ./oracle.{count_valid_signatures}
+use ../lib/validation.{validate_amount, validate_timestamp_passed}
+
+/// Main validator function
+pub fn validate(
+  datum: DistributionContract,
+  redeemer: ClaimRedeemer,
+  context: ScriptContext
+) -> Bool {
+  // T014: Beneficiary index validation
+  let allocation = when list.get(datum.beneficiary_allocations, redeemer.beneficiary_index) {
+    Ok(allocation) -> allocation
+    Error(_) -> return False
+  }
+
+  // T015: Double-claim prevention
+  when allocation.claimed {
+    True -> return False
+    False -> void
+  }
+
+  // T016/T038: Vesting timestamp validation with POSIXTime comparison
+  // T039: Per-allocation vesting enforcement
+  let current_time = context.tx_info.valid_range.from
+  when validate_timestamp_passed(allocation.vesting_timestamp, current_time) {
+    False -> return False
+    True -> void
+  }
+
+  // T017: Milestone identifier matching
+  when redeemer.milestone_verification.milestone_identifier == allocation.milestone_identifier {
+    False -> return False
+    True -> void
+  }
+
+  // T026: Quorum threshold check (US2 - will be enhanced in Phase 4)
+  let valid_count = count_valid_signatures(
+    redeemer.milestone_verification.oracle_signatures,
+    datum.oracle_addresses
+  )
+  when valid_count >= datum.quorum_threshold {
+    False -> return False
+    True -> void
+  }
+
+  // T018: Token transfer validation
+  // Check transaction outputs for correct token transfer to beneficiary
+  let outputs = context.tx_info.outputs
+  let beneficiary_output = list.find(outputs, fn(output) {
+    output.address == allocation.beneficiary_address
+  })
+  
+  when beneficiary_output {
+    Ok(output) -> {
+      // Verify token amount matches allocation
+      // Note: Full token validation requires checking value structure
+      // This is a simplified check - will be enhanced with proper value checking
+      True
+    }
+    Error(_) -> return False
+  }
+
+  // T019: Datum update logic
+  // If contract continues, verify datum is updated correctly
+  // If all allocations claimed, contract can be closed (no datum required)
+  True
+}
+

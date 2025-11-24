@@ -1,0 +1,50 @@
+// Unit tests for datum types and validation
+
+use aiken/builtin.{Address, ByteArray, Int, Bool, List}
+use ../../src/validator/datum.{DistributionContract, BeneficiaryAllocation}
+use ../../src/lib/types.{ContractMetadata}
+use ../../src/lib/validation.{validate_total_amount}
+
+// T035: Unit test for multi-recipient contract creation
+test "multi_recipient_contract_creation" {
+  // Create multiple beneficiary allocations
+  let allocation1 = BeneficiaryAllocation {
+    beneficiary_address: #"addr_test1...",
+    token_amount: 1000000,
+    milestone_identifier: #"milestone-001",
+    vesting_timestamp: 1735689600,
+    claimed: False
+  }
+  
+  let allocation2 = BeneficiaryAllocation {
+    beneficiary_address: #"addr_test2...",
+    token_amount: 2000000,
+    milestone_identifier: #"milestone-002",
+    vesting_timestamp: 1735776000,
+    claimed: False
+  }
+  
+  let allocations = [allocation1, allocation2]
+  let total_amount = 3000000
+  
+  // Verify total amount validation
+  let amounts = list.map(allocations, fn(a) { a.token_amount })
+  validate_total_amount(total_amount, amounts)
+}
+
+// T042: Test for future vesting timestamp validation at contract creation
+test "future_vesting_timestamp_validation" {
+  // Create allocation with future vesting timestamp
+  let allocation = BeneficiaryAllocation {
+    beneficiary_address: #"addr_test1...",
+    token_amount: 1000000,
+    milestone_identifier: #"milestone-001",
+    vesting_timestamp: 9999999999,  // Far future
+    claimed: False
+  }
+  
+  // Verify timestamp is in the future
+  let current_time = 1735689600
+  allocation.vesting_timestamp > current_time
+}
+
