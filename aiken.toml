@@ -1,8 +1,6 @@
-[project]
-name = "milestone-token-distribution"
+name = "your_org/milestone_token_distribution"
 version = "0.1.0"
 description = "Milestone-based token distribution system on Cardano"
-repository = "https://github.com/your-org/Aiken-Project"
 
 [build]
 compiler = "aiken"

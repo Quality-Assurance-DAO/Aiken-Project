@@ -1,7 +1,7 @@
 // CLI command for creating distribution contracts
 
 use aiken/builtin.{Address, ByteArray, Int, List, Bool}
-use ../validator/datum.{DistributionContract, BeneficiaryAllocation}
+use ../contract/datum.{DistributionContract, BeneficiaryAllocation}
 use ../lib/types.{ContractMetadata}
 use ../lib/validation.{validate_amount, validate_quorum_threshold}
 

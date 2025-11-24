@@ -1,0 +1,13 @@
+{
+  "preamble": {
+    "title": "your-org/milestone-token-distribution",
+    "description": "Milestone-based token distribution system on Cardano",
+    "version": "0.1.0",
+    "plutusVersion": "v3",
+    "compiler": {
+      "name": "Aiken",
+      "version": "v1.1.19+unknown"
+    }
+  },
+  "validators": []
+}

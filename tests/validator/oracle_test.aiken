@@ -1,7 +1,7 @@
 // Unit tests for oracle signature verification logic
 
 use aiken/builtin.{Address, ByteArray, Int, List}
-use ../../src/validator/oracle.{OracleSignature, filter_authorized_signatures, remove_duplicate_oracles, count_valid_signatures}
+use ../../src/contract/oracle.{OracleSignature, filter_authorized_signatures, remove_duplicate_oracles, count_valid_signatures}
 
 // T028: Unit test for valid quorum acceptance
 test "valid_quorum_acceptance" {

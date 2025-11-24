@@ -101,7 +101,7 @@ test "beneficiary can claim tokens after vesting" {
 ### 2. Implement Validator Logic
 
 ```aiken
-// src/validator/lib.aiken
+// src/contract/lib.aiken
 validator {
   fn validate(datum: DistributionContract, redeemer: ClaimRedeemer, context: ScriptContext) -> Bool {
     // Implementation here

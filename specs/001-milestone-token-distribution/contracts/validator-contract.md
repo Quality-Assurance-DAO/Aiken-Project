@@ -13,7 +13,7 @@ This document specifies the on-chain validator contract interface for the milest
 
 **Type**: Spending Validator  
 **Language**: Aiken  
-**Location**: `src/validator/lib.aiken`
+**Location**: `src/contract/lib.aiken`
 
 ### Datum Type
 

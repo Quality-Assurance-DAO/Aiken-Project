@@ -1,7 +1,7 @@
 // CLI command for building and submitting claim transactions
 
 use aiken/builtin.{Address, ByteArray, Int, Bool}
-use ../validator/redeemer.{ClaimRedeemer, MilestoneVerification}
+use ../contract/redeemer.{ClaimRedeemer, MilestoneVerification}
 
 /// Build claim transaction redeemer
 /// T044: Implement claim command

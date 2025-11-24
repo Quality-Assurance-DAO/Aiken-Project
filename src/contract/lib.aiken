@@ -1,16 +1,17 @@
 // Main validator logic for milestone-based token distribution
 
-use aiken/builtin.{Address, ByteArray, Int, Bool, List, ScriptContext}
+use aiken/builtin.{Address, ByteArray, Int, Bool, List}
+use aiken/transaction.{Transaction}
 use ./datum.{DistributionContract, BeneficiaryAllocation}
 use ./redeemer.{ClaimRedeemer}
 use ./oracle.{count_valid_signatures}
 use ../lib/validation.{validate_amount, validate_timestamp_passed}
 
-/// Main validator function
+/// Core validation logic shared between on-chain validator and tests
 pub fn validate(
   datum: DistributionContract,
   redeemer: ClaimRedeemer,
-  context: ScriptContext
+  tx: Transaction
 ) -> Bool {
   // T014: Beneficiary index validation
   let allocation = when list.get(datum.beneficiary_allocations, redeemer.beneficiary_index) {
@@ -26,7 +27,7 @@ pub fn validate(
 
   // T016/T038: Vesting timestamp validation with POSIXTime comparison
   // T039: Per-allocation vesting enforcement
-  let current_time = context.tx_info.valid_range.from
+  let current_time = tx.valid_range.from
   when validate_timestamp_passed(allocation.vesting_timestamp, current_time) {
     False -> return False
     True -> void
@@ -50,13 +51,13 @@ pub fn validate(
 
   // T018: Token transfer validation
   // Check transaction outputs for correct token transfer to beneficiary
-  let outputs = context.tx_info.outputs
+  let outputs = tx.outputs
   let beneficiary_output = list.find(outputs, fn(output) {
     output.address == allocation.beneficiary_address
   })
   
   when beneficiary_output {
-    Ok(output) -> {
+    Ok(_output) -> {
       // Verify token amount matches allocation
       // Note: Full token validation requires checking value structure
       // This is a simplified check - will be enhanced with proper value checking
