@@ -10,7 +10,7 @@ This guide provides step-by-step instructions for deploying the milestone-based 
 ## Prerequisites
 
 - Aiken development environment installed
-- Cardano CLI tools installed and configured
+- Cardano CLI tools installed and configured (see `docs/cardano-cli-setup.md`)
 - Access to Cardano testnet node or API
 - Testnet ADA for transaction fees
 - Test signing keys for contract deployment
