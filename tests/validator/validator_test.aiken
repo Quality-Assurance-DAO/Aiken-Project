@@ -1,10 +1,10 @@
 // Unit tests for validator logic
 
 use aiken/builtin.{Address, ByteArray, Int, Bool, List}
-use ../../src/validator/lib.{validate}
-use ../../src/validator/datum.{DistributionContract, BeneficiaryAllocation}
-use ../../src/validator/redeemer.{ClaimRedeemer, MilestoneVerification}
-use ../../src/validator/oracle.{OracleSignature}
+use ../../src/contract/lib.{validate}
+use ../../src/contract/datum.{DistributionContract, BeneficiaryAllocation}
+use ../../src/contract/redeemer.{ClaimRedeemer, MilestoneVerification}
+use ../../src/contract/oracle.{OracleSignature}
 use ../../src/lib/types.{ContractMetadata}
 
 // T020: Unit test for valid claim scenario

@@ -41,7 +41,7 @@ This document provides an actionable, dependency-ordered task list for implement
 
 ### Setup Tasks
 
-- [X] T001 Create project structure per implementation plan in src/validator/, src/cli/, src/lib/, tests/validator/, tests/integration/, tests/unit/, scripts/
+- [X] T001 Create project structure per implementation plan in src/contract/, src/cli/, src/lib/, tests/validator/, tests/integration/, tests/unit/, scripts/
 - [X] T002 Initialize Aiken project configuration with aiken.toml in project root
 - [X] T003 Create shared type definitions in src/lib/types.aiken for Address, ByteArray, Int, Bool, List, Option
 - [X] T004 Create validation helper functions in src/lib/validation.aiken for address validation, timestamp validation, amount validation
@@ -59,12 +59,12 @@ This document provides an actionable, dependency-ordered task list for implement
 ### Foundational Tasks
 
 - [X] T007 Implement ContractMetadata type in src/lib/types.aiken with creation_timestamp, creator_address, contract_version, description fields
-- [X] T008 Implement BeneficiaryAllocation type in src/validator/datum.aiken with beneficiary_address, token_amount, milestone_identifier, vesting_timestamp, claimed fields
-- [X] T009 Implement DistributionContract datum type in src/validator/datum.aiken with total_token_amount, token_policy_id, beneficiary_allocations, oracle_addresses, quorum_threshold, total_oracles, contract_metadata fields
-- [X] T010 Implement OracleSignature type in src/validator/oracle.aiken with oracle_address, signature_hash, signed_data, signature_timestamp fields
-- [X] T011 Implement MilestoneVerification type in src/validator/redeemer.aiken with milestone_identifier, oracle_signatures, verification_timestamp fields
-- [X] T012 Implement ClaimRedeemer type in src/validator/redeemer.aiken with beneficiary_index, milestone_verification fields
-- [X] T013 Create validator skeleton in src/validator/lib.aiken with validate function signature accepting DistributionContract datum, ClaimRedeemer redeemer, ScriptContext context
+- [X] T008 Implement BeneficiaryAllocation type in src/contract/datum.aiken with beneficiary_address, token_amount, milestone_identifier, vesting_timestamp, claimed fields
+- [X] T009 Implement DistributionContract datum type in src/contract/datum.aiken with total_token_amount, token_policy_id, beneficiary_allocations, oracle_addresses, quorum_threshold, total_oracles, contract_metadata fields
+- [X] T010 Implement OracleSignature type in src/contract/oracle.aiken with oracle_address, signature_hash, signed_data, signature_timestamp fields
+- [X] T011 Implement MilestoneVerification type in src/contract/redeemer.aiken with milestone_identifier, oracle_signatures, verification_timestamp fields
+- [X] T012 Implement ClaimRedeemer type in src/contract/redeemer.aiken with beneficiary_index, milestone_verification fields
+- [X] T013 Create validator skeleton in src/contract/lib.aiken with validate function signature accepting DistributionContract datum, ClaimRedeemer redeemer, ScriptContext context
 
 ## Phase 3: User Story 1 - Beneficiary Claims Tokens (P1)
 
@@ -82,12 +82,12 @@ This document provides an actionable, dependency-ordered task list for implement
 
 ### User Story 1 Tasks
 
-- [X] T014 [US1] Implement beneficiary index validation in src/validator/lib.aiken validate function to check index is within bounds
-- [X] T015 [US1] Implement double-claim prevention check in src/validator/lib.aiken validate function to verify allocation.claimed == false
-- [X] T016 [US1] Implement vesting timestamp validation in src/validator/lib.aiken validate function to check current_time >= allocation.vesting_timestamp
-- [X] T017 [US1] Implement milestone identifier matching in src/validator/lib.aiken validate function to verify redeemer.milestone_verification.milestone_identifier == allocation.milestone_identifier
-- [X] T018 [US1] Implement token transfer validation in src/validator/lib.aiken validate function to verify transaction output sends correct token_amount to beneficiary_address
-- [X] T019 [US1] Implement datum update logic in src/validator/lib.aiken validate function to mark allocation.claimed = true in updated datum
+- [X] T014 [US1] Implement beneficiary index validation in src/contract/lib.aiken validate function to check index is within bounds
+- [X] T015 [US1] Implement double-claim prevention check in src/contract/lib.aiken validate function to verify allocation.claimed == false
+- [X] T016 [US1] Implement vesting timestamp validation in src/contract/lib.aiken validate function to check current_time >= allocation.vesting_timestamp
+- [X] T017 [US1] Implement milestone identifier matching in src/contract/lib.aiken validate function to verify redeemer.milestone_verification.milestone_identifier == allocation.milestone_identifier
+- [X] T018 [US1] Implement token transfer validation in src/contract/lib.aiken validate function to verify transaction output sends correct token_amount to beneficiary_address
+- [X] T019 [US1] Implement datum update logic in src/contract/lib.aiken validate function to mark allocation.claimed = true in updated datum
 - [X] T020 [US1] Create unit test for valid claim scenario in tests/validator/validator_test.aiken
 - [X] T021 [US1] Create unit test for double-claim prevention in tests/validator/validator_test.aiken
 - [X] T022 [US1] Create unit test for vesting timestamp enforcement in tests/validator/validator_test.aiken
@@ -109,10 +109,10 @@ This document provides an actionable, dependency-ordered task list for implement
 
 ### User Story 2 Tasks
 
-- [X] T024 [US2] Implement oracle address filtering logic in src/validator/oracle.aiken to filter signatures to only those from authorized oracle_addresses
-- [X] T025 [US2] Implement duplicate oracle removal logic in src/validator/oracle.aiken to count each oracle address only once toward quorum
-- [X] T026 [US2] Implement quorum threshold check in src/validator/lib.aiken validate function to verify valid_count >= quorum_threshold
-- [X] T027 [US2] Implement unauthorized signature handling in src/validator/oracle.aiken to ignore signatures from non-authorized addresses without causing rejection
+- [X] T024 [US2] Implement oracle address filtering logic in src/contract/oracle.aiken to filter signatures to only those from authorized oracle_addresses
+- [X] T025 [US2] Implement duplicate oracle removal logic in src/contract/oracle.aiken to count each oracle address only once toward quorum
+- [X] T026 [US2] Implement quorum threshold check in src/contract/lib.aiken validate function to verify valid_count >= quorum_threshold
+- [X] T027 [US2] Implement unauthorized signature handling in src/contract/oracle.aiken to ignore signatures from non-authorized addresses without causing rejection
 - [X] T028 [US2] Create unit test for valid quorum acceptance in tests/validator/oracle_test.aiken
 - [X] T029 [US2] Create unit test for quorum failure rejection in tests/validator/oracle_test.aiken
 - [X] T030 [US2] Create unit test for duplicate signature handling in tests/validator/oracle_test.aiken
@@ -134,8 +134,8 @@ This document provides an actionable, dependency-ordered task list for implement
 
 ### User Story 3 Tasks
 
-- [X] T032 [US3] Implement multi-allocation datum validation in src/validator/lib.aiken validate function to handle list of beneficiary_allocations
-- [X] T033 [US3] Implement allocation preservation logic in src/validator/lib.aiken validate function to update only claimed allocation while preserving others
+- [X] T032 [US3] Implement multi-allocation datum validation in src/contract/lib.aiken validate function to handle list of beneficiary_allocations
+- [X] T033 [US3] Implement allocation preservation logic in src/contract/lib.aiken validate function to update only claimed allocation while preserving others
 - [X] T034 [US3] Implement total token amount validation in src/lib/validation.aiken to verify total_token_amount equals sum of all allocations
 - [X] T035 [US3] Create unit test for multi-recipient contract creation in tests/validator/datum_test.aiken
 - [X] T036 [US3] Create integration test for sequential multi-recipient claims in tests/integration/multi_recipient_test.aiken
@@ -157,8 +157,8 @@ This document provides an actionable, dependency-ordered task list for implement
 
 ### User Story 4 Tasks
 
-- [X] T038 [US4] Enhance vesting timestamp validation in src/validator/lib.aiken validate function to handle POSIXTime comparison with transaction validity range
-- [X] T039 [US4] Implement per-allocation vesting enforcement in src/validator/lib.aiken validate function to check each allocation's vesting_timestamp independently
+- [X] T038 [US4] Enhance vesting timestamp validation in src/contract/lib.aiken validate function to handle POSIXTime comparison with transaction validity range
+- [X] T039 [US4] Implement per-allocation vesting enforcement in src/contract/lib.aiken validate function to check each allocation's vesting_timestamp independently
 - [X] T040 [US4] Create unit test for vesting timestamp enforcement in tests/validator/validator_test.aiken
 - [X] T041 [US4] Create integration test for multi-allocation vesting scenarios in tests/integration/vesting_test.aiken
 - [X] T042 [US4] Create test for future vesting timestamp validation at contract creation in tests/validator/datum_test.aiken

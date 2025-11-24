@@ -1,8 +1,8 @@
 // CLI utility functions for milestone verification and contract querying
 
 use aiken/builtin.{Address, ByteArray, Int, List, Bool}
-use ../validator/oracle.{OracleSignature, count_valid_signatures}
-use ../validator/redeemer.{MilestoneVerification}
+use ../contract/oracle.{OracleSignature, count_valid_signatures}
+use ../contract/redeemer.{MilestoneVerification}
 
 /// Verify milestone signatures off-chain before claim
 /// T045: Implement verify-milestone command

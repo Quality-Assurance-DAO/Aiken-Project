@@ -1,7 +1,7 @@
 // Unit tests for datum types and validation
 
 use aiken/builtin.{Address, ByteArray, Int, Bool, List}
-use ../../src/validator/datum.{DistributionContract, BeneficiaryAllocation}
+use ../../src/contract/datum.{DistributionContract, BeneficiaryAllocation}
 use ../../src/lib/types.{ContractMetadata}
 use ../../src/lib/validation.{validate_total_amount}
 
