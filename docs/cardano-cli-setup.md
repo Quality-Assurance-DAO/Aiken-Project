@@ -44,11 +44,14 @@ brew install libsodium secp256k1
 
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+source ~/.ghcup/env   # Ensures this shell sees ~/.ghcup/bin
 ghcup install ghc 9.6.3
 ghcup set ghc 9.6.3
 ghcup install cabal 3.10.2.1
 ghcup set cabal 3.10.2.1
 ```
+
+> **Note:** If `ghcup` still is not found in new shells, add `export PATH="$HOME/.ghcup/bin:$PATH"` to your `~/.zshrc` (or equivalent) and reload it.
 
 3. Clone and build:
 
@@ -70,6 +73,40 @@ cabal list-bin cardano-node | xargs -I {} cp "{}" ~/.local/bin/
 ```
 
 Add `~/.local/bin` to your `PATH` if necessary (e.g., `echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc`).
+
+#### Apple Silicon lessons learned (M1/M2)
+
+The latest run-through of these steps on an M1 Pro (macOS 15) surfaced a few fixes worth codifying:
+
+1. **Reset stale Cabal indexes when dependency solving fails.**
+   ```bash
+   rm -f ~/.cabal/packages/*/01-index.cache
+   cabal update
+   ```
+   This resolved `index-state` warnings and ensured we were compiling against the freshest package metadata before `cabal build`.
+
+2. **Expose `libsodium`/`secp256k1` via pkg-config.** Even with `brew install libsodium secp256k1`, Cabal reported `pkg-config package libsodium-any, not found`. Export the brew prefixes (or the path to your manually compiled `cardano-libsodium`) so pkg-config and the linker can see them:
+   ```bash
+   export LIBSODIUM_PREFIX="$(brew --prefix libsodium)"        # or /usr/local/cardano-libsodium
+   export PKG_CONFIG_PATH="$LIBSODIUM_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
+   export LIBRARY_PATH="$LIBSODIUM_PREFIX/lib:$LIBRARY_PATH"
+   export C_INCLUDE_PATH="$LIBSODIUM_PREFIX/include:$C_INCLUDE_PATH"
+   export DYLD_LIBRARY_PATH="$LIBSODIUM_PREFIX/lib:$DYLD_LIBRARY_PATH"
+   ```
+
+3. **Point the linker at Homebrew’s OpenSSL.** The Apple linker emitted `ld: library 'ssl' not found` until we explicitly referenced Brew’s keg:
+   ```bash
+   brew install openssl@3
+   export OPENSSL_PREFIX="$(brew --prefix openssl@3)"
+   export LDFLAGS="-L${OPENSSL_PREFIX}/lib $LDFLAGS"
+   export CPPFLAGS="-I${OPENSSL_PREFIX}/include $CPPFLAGS"
+   export PKG_CONFIG_PATH="${OPENSSL_PREFIX}/lib/pkgconfig:$PKG_CONFIG_PATH"
+   export LIBRARY_PATH="${OPENSSL_PREFIX}/lib:$LIBRARY_PATH"
+   export DYLD_LIBRARY_PATH="${OPENSSL_PREFIX}/lib:$DYLD_LIBRARY_PATH"
+   ```
+   Keeping these exports in your shell profile prevents future builds from regressing.
+
+4. **Use Cabal’s conflict minimizer.** Running `cabal build cardano-cli cardano-node --minimize-conflict-set` made the dependency solver converge faster on Apple Silicon.
 
 ## 4. Network configuration
 
