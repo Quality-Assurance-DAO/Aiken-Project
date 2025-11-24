@@ -269,3 +269,4 @@ ClaimTransaction (1)
 - **Dynamic quorum**: Not supported (set at contract creation)
 - **Multiple milestones per beneficiary**: Supported via multiple allocations with different milestone_identifiers
 
+
