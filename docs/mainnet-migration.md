@@ -1,11 +1,13 @@
 # Mainnet Migration Checklist
 
+**Navigation**: [Home](../README.md) > [Documentation](./README.md) > Mainnet Migration
+
 **Date**: 2025-01-27  
 **Feature**: 001-milestone-token-distribution
 
 ## Overview
 
-This checklist provides steps for migrating the milestone-based token distribution system from testnet to mainnet.
+This checklist provides steps for migrating the [milestone token distribution](./glossary.md#milestone-token-distribution) system from [testnet](./glossary.md#testnet) to [mainnet](./glossary.md#mainnet).
 
 ## Pre-Migration Checklist
 

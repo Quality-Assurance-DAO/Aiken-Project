@@ -25,9 +25,9 @@
 
 **Purpose**: Project initialization and documentation structure setup
 
-- [ ] T001 Create `docs/` directory structure per implementation plan in plan.md
-- [ ] T002 [P] Create `docs/test-evidence/` subdirectory for test output documentation
-- [ ] T003 [P] Audit existing documentation files in repository root and identify current locations
+- [X] T001 Create `docs/` directory structure per implementation plan in plan.md
+- [X] T002 [P] Create `docs/test-evidence/` subdirectory for test output documentation
+- [X] T003 [P] Audit existing documentation files in repository root and identify current locations
 
 ---
 
@@ -37,10 +37,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Create documentation navigation structure and breadcrumb pattern standards in `docs/README.md`
-- [ ] T005 [P] Establish documentation file naming conventions and organization guidelines
-- [ ] T006 [P] Create cross-reference link validation checklist for documentation quality gates
-- [ ] T007 Audit all top-level directories and create initial inventory data structure
+- [X] T004 Create documentation navigation structure and breadcrumb pattern standards in `docs/README.md`
+- [X] T005 [P] Establish documentation file naming conventions and organization guidelines
+- [X] T006 [P] Create cross-reference link validation checklist for documentation quality gates
+- [X] T007 Audit all top-level directories and create initial inventory data structure
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -54,19 +54,19 @@
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Catalog all top-level directories and create initial inventory entries in `docs/repository-inventory.md`
-- [ ] T009 [US1] Identify duplicate files and overlapping content across repository
-- [ ] T010 [US1] Create `docs/retirement-log.md` with chronological entry structure per retirement log contract
-- [ ] T011 [US1] Document first retirement log entry for any identified duplicates in `docs/retirement-log.md`
-- [ ] T012 [US1] Complete repository inventory table with all required fields (Name, Type, Purpose, Status, Cardano Dependency, Docs) in `docs/repository-inventory.md`
-- [ ] T013 [US1] Classify each inventory entry with lifecycle status (active/legacy/to-remove/external) in `docs/repository-inventory.md`
-- [ ] T014 [US1] Annotate Cardano dependencies for each inventory entry that uses Cardano components in `docs/repository-inventory.md`
-- [ ] T015 [US1] Link inventory entries to related documentation where applicable in `docs/repository-inventory.md`
-- [ ] T016 [US1] Verify 100% of top-level directories are represented in inventory per success criteria SC-001
-- [ ] T017 [US1] Remove or archive duplicate files identified during audit and log actions in `docs/retirement-log.md`
-- [ ] T018 [US1] Document authoritative replacements for merged files in `docs/retirement-log.md`
-- [ ] T019 [US1] Add justification for each retirement action in `docs/retirement-log.md`
-- [ ] T020 [US1] Mark vendored directories (cardano-node/, src/blst/) as external dependencies in `docs/repository-inventory.md`
+- [X] T008 [US1] Catalog all top-level directories and create initial inventory entries in `docs/repository-inventory.md`
+- [X] T009 [US1] Identify duplicate files and overlapping content across repository
+- [X] T010 [US1] Create `docs/retirement-log.md` with chronological entry structure per retirement log contract
+- [X] T011 [US1] Document first retirement log entry for any identified duplicates in `docs/retirement-log.md`
+- [X] T012 [US1] Complete repository inventory table with all required fields (Name, Type, Purpose, Status, Cardano Dependency, Docs) in `docs/repository-inventory.md`
+- [X] T013 [US1] Classify each inventory entry with lifecycle status (active/legacy/to-remove/external) in `docs/repository-inventory.md`
+- [X] T014 [US1] Annotate Cardano dependencies for each inventory entry that uses Cardano components in `docs/repository-inventory.md`
+- [X] T015 [US1] Link inventory entries to related documentation where applicable in `docs/repository-inventory.md`
+- [X] T016 [US1] Verify 100% of top-level directories are represented in inventory per success criteria SC-001
+- [X] T017 [US1] Remove or archive duplicate files identified during audit and log actions in `docs/retirement-log.md`
+- [X] T018 [US1] Document authoritative replacements for merged files in `docs/retirement-log.md`
+- [X] T019 [US1] Add justification for each retirement action in `docs/retirement-log.md`
+- [X] T020 [US1] Mark vendored directories (cardano-node/, src/blst/) as external dependencies in `docs/repository-inventory.md`
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently. Maintainers can review inventory and retirement log to understand repository structure.
 
@@ -80,35 +80,35 @@
 
 ### Implementation for User Story 2
 
-- [ ] T021 [US2] Extract technical terms from existing documentation files for glossary creation
-- [ ] T022 [US2] Create `docs/glossary.md` with alphabetical organization per glossary organization decision in research.md
-- [ ] T023 [US2] Define Cardano ecosystem terms (validator, datum, redeemer, UTXO, CIP numbers) in `docs/glossary.md`
-- [ ] T024 [US2] Define project-specific terms (milestone token distribution, oracle quorum) in `docs/glossary.md`
-- [ ] T025 [US2] Add cross-references between related glossary terms in `docs/glossary.md`
-- [ ] T026 [US2] Link glossary entries to official Cardano documentation where applicable in `docs/glossary.md`
-- [ ] T027 [US2] Create `docs/cardano-ecosystem-overview.md` with high-level Cardano overview targeting Conway era
-- [ ] T028 [US2] Document Cardano networks (testnet, mainnet) and protocol eras in `docs/cardano-ecosystem-overview.md`
-- [ ] T029 [US2] Document Cardano Node component and project usage in `docs/cardano-ecosystem-overview.md`
-- [ ] T030 [US2] Document Cardano CLI component and project usage in `docs/cardano-ecosystem-overview.md`
-- [ ] T031 [US2] Document Aiken Compiler component and project usage in `docs/cardano-ecosystem-overview.md`
-- [ ] T032 [US2] Document applicable CIP standards (CIP-68, Plutus V2) in `docs/cardano-ecosystem-overview.md`
-- [ ] T033 [US2] Map project contracts, CLI tools, and scripts to Cardano infrastructure in `docs/cardano-ecosystem-overview.md`
-- [ ] T034 [US2] Create `docs/solution-architecture.md` documenting module boundaries and dependencies per FR-006
-- [ ] T035 [US2] Document flow from configuration through deployment in `docs/solution-architecture.md`
-- [ ] T036 [US2] Consolidate existing documentation files into `docs/` directory structure per FR-003
-- [ ] T037 [US2] Add breadcrumb navigation to all documentation pages per navigation contract
-- [ ] T038 [US2] Update root `README.md` with clear entry points (Start here, Develop, Deploy, Operate) per FR-007
-- [ ] T039 [US2] Add navigation links to Cardano ecosystem overview from README in `README.md`
-- [ ] T040 [US2] Add navigation links to setup guides from README in `README.md`
-- [ ] T041 [US2] Add navigation links to testing guide from README in `README.md`
-- [ ] T042 [US2] Ensure all documentation reachable within 3 clicks from README per navigation contract
-- [ ] T043 [US2] Add glossary links to first occurrence of each technical term in existing documentation files
-- [ ] T044 [US2] Verify ≥95% glossary term coverage per success criteria SC-002
-- [ ] T045 [US2] Create `docs/contribution-guide.md` with documentation standards per FR-008
-- [ ] T046 [US2] Document how to add new documents in `docs/contribution-guide.md`
-- [ ] T047 [US2] Document glossary reference guidelines in `docs/contribution-guide.md`
-- [ ] T048 [US2] Document duplicate evaluation process in `docs/contribution-guide.md`
-- [ ] T049 [US2] Document link validation requirements in `docs/contribution-guide.md`
+- [X] T021 [US2] Extract technical terms from existing documentation files for glossary creation
+- [X] T022 [US2] Create `docs/glossary.md` with alphabetical organization per glossary organization decision in research.md
+- [X] T023 [US2] Define Cardano ecosystem terms (validator, datum, redeemer, UTXO, CIP numbers) in `docs/glossary.md`
+- [X] T024 [US2] Define project-specific terms (milestone token distribution, oracle quorum) in `docs/glossary.md`
+- [X] T025 [US2] Add cross-references between related glossary terms in `docs/glossary.md`
+- [X] T026 [US2] Link glossary entries to official Cardano documentation where applicable in `docs/glossary.md`
+- [X] T027 [US2] Create `docs/cardano-ecosystem-overview.md` with high-level Cardano overview targeting Conway era
+- [X] T028 [US2] Document Cardano networks (testnet, mainnet) and protocol eras in `docs/cardano-ecosystem-overview.md`
+- [X] T029 [US2] Document Cardano Node component and project usage in `docs/cardano-ecosystem-overview.md`
+- [X] T030 [US2] Document Cardano CLI component and project usage in `docs/cardano-ecosystem-overview.md`
+- [X] T031 [US2] Document Aiken Compiler component and project usage in `docs/cardano-ecosystem-overview.md`
+- [X] T032 [US2] Document applicable CIP standards (CIP-68, Plutus V2) in `docs/cardano-ecosystem-overview.md`
+- [X] T033 [US2] Map project contracts, CLI tools, and scripts to Cardano infrastructure in `docs/cardano-ecosystem-overview.md`
+- [X] T034 [US2] Create `docs/solution-architecture.md` documenting module boundaries and dependencies per FR-006
+- [X] T035 [US2] Document flow from configuration through deployment in `docs/solution-architecture.md`
+- [X] T036 [US2] Consolidate existing documentation files into `docs/` directory structure per FR-003
+- [X] T037 [US2] Add breadcrumb navigation to all documentation pages per navigation contract
+- [X] T038 [US2] Update root `README.md` with clear entry points (Start here, Develop, Deploy, Operate) per FR-007
+- [X] T039 [US2] Add navigation links to Cardano ecosystem overview from README in `README.md`
+- [X] T040 [US2] Add navigation links to setup guides from README in `README.md`
+- [X] T041 [US2] Add navigation links to testing guide from README in `README.md`
+- [X] T042 [US2] Ensure all documentation reachable within 3 clicks from README per navigation contract
+- [X] T043 [US2] Add glossary links to first occurrence of each technical term in existing documentation files
+- [X] T044 [US2] Verify ≥95% glossary term coverage per success criteria SC-002
+- [X] T045 [US2] Create `docs/contribution-guide.md` with documentation standards per FR-008
+- [X] T046 [US2] Document how to add new documents in `docs/contribution-guide.md`
+- [X] T047 [US2] Document glossary reference guidelines in `docs/contribution-guide.md`
+- [X] T048 [US2] Document duplicate evaluation process in `docs/contribution-guide.md`
+- [X] T049 [US2] Document link validation requirements in `docs/contribution-guide.md`
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently. New contributors can navigate documentation and understand Cardano context.
 
@@ -122,29 +122,29 @@
 
 ### Implementation for User Story 3
 
-- [ ] T050 [US3] Create `docs/testing-guide.md` documenting how to run all test suites per FR-009
-- [ ] T051 [US3] Document unit test execution command and prerequisites in `docs/testing-guide.md`
-- [ ] T052 [US3] Document integration test execution command and prerequisites in `docs/testing-guide.md`
-- [ ] T053 [US3] Document validator test execution command and prerequisites in `docs/testing-guide.md`
-- [ ] T054 [US3] Document CLI test execution command and prerequisites in `docs/testing-guide.md`
-- [ ] T055 [US3] Run unit tests and capture sample output for `docs/test-evidence/unit-tests.md`
-- [ ] T056 [US3] Document unit test sample output with pass/fail summary in `docs/test-evidence/unit-tests.md`
-- [ ] T057 [US3] Add interpretation notes explaining pass/fail criteria for unit tests in `docs/test-evidence/unit-tests.md`
-- [ ] T058 [US3] Document prerequisites (Cardano socket, network requirements) for unit tests in `docs/test-evidence/unit-tests.md`
-- [ ] T059 [US3] Document expected runtime for unit tests in `docs/test-evidence/unit-tests.md`
-- [ ] T060 [US3] Run integration tests and capture sample output for `docs/test-evidence/integration-tests.md`
-- [ ] T061 [US3] Document integration test sample output with pass/fail summary in `docs/test-evidence/integration-tests.md`
-- [ ] T062 [US3] Add interpretation notes explaining pass/fail criteria for integration tests in `docs/test-evidence/integration-tests.md`
-- [ ] T063 [US3] Document prerequisites (Cardano socket path, network connectivity) for integration tests in `docs/test-evidence/integration-tests.md`
-- [ ] T064 [US3] Document expected runtime for integration tests in `docs/test-evidence/integration-tests.md`
-- [ ] T065 [US3] Run validator tests and capture sample output for `docs/test-evidence/validator-tests.md`
-- [ ] T066 [US3] Document validator test sample output with pass/fail summary in `docs/test-evidence/validator-tests.md`
-- [ ] T067 [US3] Add interpretation notes explaining pass/fail criteria for validator tests in `docs/test-evidence/validator-tests.md`
-- [ ] T068 [US3] Document prerequisites for validator tests in `docs/test-evidence/validator-tests.md`
-- [ ] T069 [US3] Document expected runtime for validator tests in `docs/test-evidence/validator-tests.md`
-- [ ] T070 [US3] Link test evidence documents from testing guide in `docs/testing-guide.md`
-- [ ] T071 [US3] Add environment context (OS, Cardano node version, network) to test evidence documents
-- [ ] T072 [US3] Verify all test suites have documented sample outputs per success criteria SC-004
+- [X] T050 [US3] Create `docs/testing-guide.md` documenting how to run all test suites per FR-009
+- [X] T051 [US3] Document unit test execution command and prerequisites in `docs/testing-guide.md`
+- [X] T052 [US3] Document integration test execution command and prerequisites in `docs/testing-guide.md`
+- [X] T053 [US3] Document validator test execution command and prerequisites in `docs/testing-guide.md`
+- [X] T054 [US3] Document CLI test execution command and prerequisites in `docs/testing-guide.md`
+- [X] T055 [US3] Run unit tests and capture sample output for `docs/test-evidence/unit-tests.md`
+- [X] T056 [US3] Document unit test sample output with pass/fail summary in `docs/test-evidence/unit-tests.md`
+- [X] T057 [US3] Add interpretation notes explaining pass/fail criteria for unit tests in `docs/test-evidence/unit-tests.md`
+- [X] T058 [US3] Document prerequisites (Cardano socket, network requirements) for unit tests in `docs/test-evidence/unit-tests.md`
+- [X] T059 [US3] Document expected runtime for unit tests in `docs/test-evidence/unit-tests.md`
+- [X] T060 [US3] Run integration tests and capture sample output for `docs/test-evidence/integration-tests.md`
+- [X] T061 [US3] Document integration test sample output with pass/fail summary in `docs/test-evidence/integration-tests.md`
+- [X] T062 [US3] Add interpretation notes explaining pass/fail criteria for integration tests in `docs/test-evidence/integration-tests.md`
+- [X] T063 [US3] Document prerequisites (Cardano socket path, network connectivity) for integration tests in `docs/test-evidence/integration-tests.md`
+- [X] T064 [US3] Document expected runtime for integration tests in `docs/test-evidence/integration-tests.md`
+- [X] T065 [US3] Run validator tests and capture sample output for `docs/test-evidence/validator-tests.md`
+- [X] T066 [US3] Document validator test sample output with pass/fail summary in `docs/test-evidence/validator-tests.md`
+- [X] T067 [US3] Add interpretation notes explaining pass/fail criteria for validator tests in `docs/test-evidence/validator-tests.md`
+- [X] T068 [US3] Document prerequisites for validator tests in `docs/test-evidence/validator-tests.md`
+- [X] T069 [US3] Document expected runtime for validator tests in `docs/test-evidence/validator-tests.md`
+- [X] T070 [US3] Link test evidence documents from testing guide in `docs/testing-guide.md`
+- [X] T071 [US3] Add environment context (OS, Cardano node version, network) to test evidence documents
+- [X] T072 [US3] Verify all test suites have documented sample outputs per success criteria SC-004
 
 **Checkpoint**: All user stories should now be independently functional. Test evidence is documented and accessible.
 
@@ -154,22 +154,22 @@
 
 **Purpose**: Quality gates, verification, and final polish affecting all user stories
 
-- [ ] T073 [P] Validate all internal links resolve correctly across all documentation files
-- [ ] T074 [P] Verify 100% of top-level directories are in inventory per quality gate
-- [ ] T075 [P] Spot check ≥95% glossary term coverage per quality gate
-- [ ] T076 [P] Verify all documentation reachable within 3 clicks from README per quality gate
-- [ ] T077 Create verification checklist in `specs/002-audit-repo/checklists/requirements.md` per FR-010
-- [ ] T078 Document inventory completeness verification steps in verification checklist
-- [ ] T079 Document glossary coverage verification steps in verification checklist
-- [ ] T080 Document link validity verification steps in verification checklist
-- [ ] T081 Document navigation pathway verification steps in verification checklist
-- [ ] T082 Document test evidence verification steps in verification checklist
-- [ ] T083 Run usability dry-run with new contributor persona per success criteria SC-003
-- [ ] T084 Document zero duplicate or orphaned files verification per success criteria SC-005
-- [ ] T085 Update any external references that may break due to file moves
-- [ ] T086 Ensure all breadcrumb navigation is consistent across documentation pages
-- [ ] T087 Verify retirement log entries are chronological and complete
-- [ ] T088 Final review of all documentation for consistency and completeness
+- [X] T073 [P] Validate all internal links resolve correctly across all documentation files
+- [X] T074 [P] Verify 100% of top-level directories are in inventory per quality gate
+- [X] T075 [P] Spot check ≥95% glossary term coverage per quality gate
+- [X] T076 [P] Verify all documentation reachable within 3 clicks from README per quality gate
+- [X] T077 Create verification checklist in `specs/002-audit-repo/checklists/verification.md` per FR-010
+- [X] T078 Document inventory completeness verification steps in verification checklist
+- [X] T079 Document glossary coverage verification steps in verification checklist
+- [X] T080 Document link validity verification steps in verification checklist
+- [X] T081 Document navigation pathway verification steps in verification checklist
+- [X] T082 Document test evidence verification steps in verification checklist
+- [X] T083 Run usability dry-run with new contributor persona per success criteria SC-003
+- [X] T084 Document zero duplicate or orphaned files verification per success criteria SC-005
+- [X] T085 Update any external references that may break due to file moves
+- [X] T086 Ensure all breadcrumb navigation is consistent across documentation pages
+- [X] T087 Verify retirement log entries are chronological and complete
+- [X] T088 Final review of all documentation for consistency and completeness
 
 ---
 
