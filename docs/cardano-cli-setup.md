@@ -1,8 +1,10 @@
 # Cardano CLI Setup
 
+**Navigation**: [Home](../README.md) > [Documentation](./README.md) > Cardano CLI Setup
+
 **Last updated:** 2025-11-24
 
-This guide explains how to install `cardano-cli`, configure it for the testnet and mainnet networks used by this project, and verify that your environment works end to end.
+This guide explains how to install [`cardano-cli`](./glossary.md#cardano-cli), configure it for the [testnet](./glossary.md#testnet) and [mainnet](./glossary.md#mainnet) networks used by this project, and verify that your environment works end to end.
 
 ## 1. Prerequisites
 
