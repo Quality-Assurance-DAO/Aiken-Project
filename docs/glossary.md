@@ -153,3 +153,4 @@ When adding new terms to this glossary:
 4. Add usage examples for project-specific terms
 5. Link to relevant documentation sections
 
+

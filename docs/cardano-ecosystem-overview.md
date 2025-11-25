@@ -235,3 +235,4 @@ For new contributors:
 - [Repository Inventory](./repository-inventory.md) - Complete catalog of project components
 - [Cardano CLI Setup](./cardano-cli-setup.md) - Installation and configuration guide
 
+

@@ -40,3 +40,4 @@ pub fn validate_total_amount(total: Int, allocations: List<Int>) -> Bool {
 }
 
 
+

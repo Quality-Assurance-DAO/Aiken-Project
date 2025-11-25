@@ -195,3 +195,4 @@ This document provides a comprehensive inventory of all top-level directories an
 - [Solution Architecture](./solution-architecture.md) - Project structure and dependencies
 - [Cardano Ecosystem Overview](./cardano-ecosystem-overview.md) - Cardano components and usage
 
+
