@@ -1,17 +1,19 @@
 # Testnet Deployment Guide
 
+**Navigation**: [Home](../README.md) > [Documentation](./README.md) > Testnet Deployment
+
 **Date**: 2025-01-27  
 **Feature**: 001-milestone-token-distribution
 
 ## Overview
 
-This guide provides step-by-step instructions for deploying the milestone-based token distribution system to Cardano testnet.
+This guide provides step-by-step instructions for deploying the [milestone token distribution](./glossary.md#milestone-token-distribution) system to Cardano [testnet](./glossary.md#testnet).
 
 ## Prerequisites
 
 - Aiken development environment installed
-- Cardano CLI tools installed and configured (see `docs/cardano-cli-setup.md`)
-- Access to Cardano testnet node or API
+- [Cardano CLI](./glossary.md#cardano-cli) tools installed and configured (see `docs/cardano-cli-setup.md`)
+- Access to Cardano [testnet](./glossary.md#testnet) node or API
 - Testnet ADA for transaction fees
 - Test signing keys for contract deployment
 
