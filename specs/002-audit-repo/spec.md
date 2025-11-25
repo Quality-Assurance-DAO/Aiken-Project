@@ -5,6 +5,16 @@
 **Status**: Draft  
 **Input**: User description: "Audit and reorganize this GitHub repository to improve clarity, usability, and maintainability. Remove any duplicate, redundant, or outdated files. Consolidate all documentation into a clear, logical structure, ensuring that every technical term is defined where it appears and that all sections are coherently linked. Include an overview explaining the wider Cardano ecosystem and explicitly describe how this solution fits within that context, including its role, dependencies, and interactions with relevant Cardano components or standards. If tests are present, provide documented example test results so their purpose and expected outcomes are clear. The final repository should present a clean, well-structured, and context-rich codebase that is easy for both newcomers and experienced contributors to understand and use."
 
+## Clarifications
+
+### Session 2025-01-27
+
+- Q: Which Cardano protocol era/version should the documentation target (Babbage, Conway, or multiple)? → A: Conway era (latest)
+- Q: What glossary structure should be used (centralized file, distributed sections, hybrid, or inline-only)? → A: Single centralized glossary file (`docs/glossary.md`)
+- Q: What format should the repository inventory use (single Markdown file, separate files per category, structured JSON/YAML, or embedded in README)? → A: Single Markdown file (`docs/repository-inventory.md`)
+- Q: What format should the retirement log use (single Markdown file, separate files per action, structured JSON/YAML, or embedded in inventory)? → A: Single Markdown file (`docs/retirement-log.md`)
+- Q: Where should test evidence (sample outputs) be stored (docs/test-evidence/, inline in testing guide, separate root folder, or git-ignored)? → A: Stored in `docs/test-evidence/` with Markdown summaries
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Maintainer Gains Single Source of Truth (Priority: P1)
@@ -63,15 +73,15 @@ A QA engineer needs to run the existing Aiken/unit/integration tests and publish
 
 ### Functional Requirements
 
-- **FR-001**: Produce a comprehensive inventory that lists every top-level directory, major submodule, script set, and documentation area, capturing purpose, owner, Cardano dependency, and current lifecycle status (active, legacy, to-remove).
-- **FR-002**: Remove or archive duplicate, redundant, or outdated files and record each action in a retirement log that cites the authoritative replacement or justification for deletion.
+- **FR-001**: Produce a comprehensive inventory as a single Markdown file (`docs/repository-inventory.md`) that lists every top-level directory, major submodule, script set, and documentation area, capturing purpose, owner, Cardano dependency, and current lifecycle status (active, legacy, to-remove) in structured tables.
+- **FR-002**: Remove or archive duplicate, redundant, or outdated files and record each action in a single retirement log file (`docs/retirement-log.md`) that cites the authoritative replacement or justification for deletion, organized chronologically with structured entries.
 - **FR-003**: Consolidate all documentation into a single navigable structure (e.g., `/docs` with README entry points) that includes breadcrumbs, a table of contents, and consistent naming conventions for guides, references, and checklists.
-- **FR-004**: Ensure every technical term (Cardano CLI, CIP numbers, validator, datum, redeemer, quorum, etc.) is defined at first mention through inline definitions or a shared glossary that links back to relevant sections.
-- **FR-005**: Create a Cardano ecosystem overview that explains networks (testnet, mainnet), components (node, CLI, Aiken compiler, oracles), applicable standards (e.g., CIP-68, Plutus V2), and explicitly maps how this project’s contracts, CLI, and scripts interact with each item.
+- **FR-004**: Ensure every technical term (Cardano CLI, CIP numbers, validator, datum, redeemer, quorum, etc.) is defined at first mention through inline definitions or links to a centralized glossary file (`docs/glossary.md`) that serves as the single source of truth for terminology and links back to relevant sections.
+- **FR-005**: Create a Cardano ecosystem overview that explains networks (testnet, mainnet), components (node, CLI, Aiken compiler, oracles), applicable standards (e.g., CIP-68, Plutus V2), and explicitly maps how this project's contracts, CLI, and scripts interact with each item. The documentation targets Conway era (latest Cardano protocol version) to ensure future-proof accuracy.
 - **FR-006**: Document the repository’s solution architecture, highlighting module boundaries (contracts, CLI, scripts, data files), their dependencies on Cardano infrastructure, and the flow from configuration through deployment.
 - **FR-007**: Update the root `README` (or equivalent landing page) to guide both newcomers and experienced contributors to the new structure within three clicks, including “Start here,” “Develop,” “Deploy,” and “Operate” pathways.
 - **FR-008**: Provide contribution and maintenance guidelines describing how to add new documents, how to reference glossary terms, and how to evaluate whether future files are duplicates or outdated.
-- **FR-009**: For each available automated test suite (unit, integration, validator, CLI), document how to run it, prerequisites (e.g., Cardano socket), expected runtime, and include a captured sample output or summary table that explains the meaning of pass/fail counts.
+- **FR-009**: For each available automated test suite (unit, integration, validator, CLI), document how to run it, prerequisites (e.g., Cardano socket), expected runtime, and include captured sample outputs stored in `docs/test-evidence/` with Markdown summaries that explain the meaning of pass/fail counts and provide interpretation notes.
 - **FR-010**: Publish verification checklists that reviewers can follow to confirm the audit outcome (inventory complete, duplicates removed, docs linked, glossary coverage), enabling repeatable acceptance testing.
 
 ### Key Entities *(include if feature involves data)*
