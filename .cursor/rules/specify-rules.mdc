@@ -3,6 +3,8 @@
 Auto-generated from all feature plans. Last updated: 2025-11-24
 
 ## Active Technologies
+- Markdown documentation, Aiken smart contracts (latest stable), Bash scripts + Aiken compiler, Cardano CLI tools, Gi (002-audit-repo)
+- Git repository (Markdown files, source code), Cardano blockchain (on-chain contracts) (002-audit-repo)
 
 - Aiken (latest stable) + Aiken standard library, Cardano CLI tools (with option for cardano-cli-js/lucid libraries for advanced features) (001-milestone-token-distribution)
 
@@ -22,6 +24,7 @@ tests/
 Aiken (latest stable): Follow standard conventions
 
 ## Recent Changes
+- 002-audit-repo: Added Markdown documentation, Aiken smart contracts (latest stable), Bash scripts + Aiken compiler, Cardano CLI tools, Gi
 
 - 001-milestone-token-distribution: Added Aiken (latest stable) + Aiken standard library, Cardano CLI tools (with option for cardano-cli-js/lucid libraries for advanced features)
 
