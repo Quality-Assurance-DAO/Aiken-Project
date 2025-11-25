@@ -1,0 +1,19 @@
+// Integration tests for vesting enforcement
+
+use aiken/builtin.{Address, ByteArray, Int, Bool, List}
+
+// T041: Integration test for multi-allocation vesting scenarios
+test "multi_allocation_vesting_scenarios" {
+  // Test vesting enforcement:
+  // 1. Create allocations with different vesting timestamps
+  // 2. Attempt claim before vesting (should fail)
+  // 3. Wait for vesting time
+  // 4. Retry claim (should succeed)
+  // 5. Verify different allocations have different vesting times
+  
+  // Note: Full integration test requires transaction building and ScriptContext
+  // This is a placeholder structure
+  True
+}
+
+

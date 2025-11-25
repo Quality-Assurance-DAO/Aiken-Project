@@ -1,0 +1,23 @@
+pub module onchain_exports {
+  // Re-export modules for on-chain validator entrypoints
+  use aiken/transaction.{Transaction}
+
+  pub use contract/datum.{DistributionContract}
+  pub use contract/redeemer.{ClaimRedeemer}
+  pub use contract/lib.{validate}
+
+  /// Helper to expose validator logic to .ak entrypoints
+  pub fn run_validator(
+    datum: Option<DistributionContract>,
+    redeemer: ClaimRedeemer,
+    tx: Transaction
+  ) -> Bool {
+    let contract = when datum {
+      Some(d) -> d
+      None -> return False
+    }
+
+    validate(contract, redeemer, tx)
+  }
+}
+

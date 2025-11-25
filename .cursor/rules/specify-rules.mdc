@@ -1,0 +1,29 @@
+# Aiken-Project Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2025-11-24
+
+## Active Technologies
+
+- Aiken (latest stable) + Aiken standard library, Cardano CLI tools (with option for cardano-cli-js/lucid libraries for advanced features) (001-milestone-token-distribution)
+
+## Project Structure
+
+```text
+src/
+tests/
+```
+
+## Commands
+
+# Add commands for Aiken (latest stable)
+
+## Code Style
+
+Aiken (latest stable): Follow standard conventions
+
+## Recent Changes
+
+- 001-milestone-token-distribution: Added Aiken (latest stable) + Aiken standard library, Cardano CLI tools (with option for cardano-cli-js/lucid libraries for advanced features)
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->
