@@ -206,14 +206,64 @@ Watch for these indicators of successful connection:
 - `viewActivePeers > 0` — active peer connections
 - `ChainSyncClient` or `ChainSyncHeaderServer` messages — chain synchronization in progress
 
+#### Expected timeline
+
+Understanding typical timeframes helps set expectations:
+
+**Peer Connection Establishment:**
+- **Time:** 30 seconds to 5 minutes
+- **What happens:** Node attempts to connect to bootstrap peers from `topology.json`
+- **Success indicators:** `viewEstablishedPeers > 0` and `viewActivePeers > 0`
+
+**Initial Chain Synchronization:**
+
+The time depends on whether you're starting fresh or resuming:
+
+| Scenario | Preprod Testnet | Mainnet |
+|----------|----------------|---------|
+| **Fresh node** (empty database) | 2-6 hours | 24-48 hours |
+| **Resuming sync** (existing database) | 5-30 minutes | 30 minutes - 2 hours |
+
+**Full Synchronization (First Time):**
+- Preprod Testnet: 4-8 hours
+- Mainnet: 48+ hours (sometimes longer)
+
+**Factors Affecting Speed:**
+- **Internet connection** — faster connection = quicker sync
+- **Hardware** — SSD storage, more RAM, and CPU cores help significantly
+- **Network load** — testnets are typically faster than mainnet
+- **Database state** — resuming from existing database is much faster than starting fresh
+
+**Monitoring Progress:**
+
+Check sync status with:
+
+```bash
+cardano-cli query tip \
+  --testnet-magic 1097911063 \
+  --socket-path ~/cardano/db/testnet/node.socket
+```
+
+Look for:
+- `slot` number increasing
+- `block` number increasing  
+- `syncProgress` approaching 100.0
+
+**What You Should See:**
+- **Within 1-5 minutes:** Peer connections established (`viewEstablishedPeers > 0`)
+- **Within 5-15 minutes:** Chain sync messages appearing (`ChainSyncClient`, `ChainSyncHeaderServer`)
+- **Within 30-60 minutes:** Significant progress on testnet (if resuming from existing database)
+- **Within 2-6 hours:** Fully synced on testnet (fresh start)
+
 #### When to be concerned
 
 Only worry if you see:
 - **Repeated failures to all peers** — check your network connection and topology.json
 - **Database errors** — verify database path permissions
 - **Configuration parsing errors** — ensure config files are valid JSON (not HTML error pages)
+- **No peer connections after 10-15 minutes** — may indicate network or configuration issues
 
-The node typically takes several minutes to establish connections and begin syncing. Be patient during the initial startup phase.
+Be patient during the initial startup phase, especially on first-time sync.
 
 ## 6. Environment variables
 
