@@ -2,7 +2,7 @@
 
 **Navigation**: [Home](../README.md) > [Documentation](./README.md) > Cardano CLI Setup
 
-**Last updated:** 2025-11-24
+**Last updated:** 2025-11-26
 
 This guide explains how to install [`cardano-cli`](./glossary.md#cardano-cli), configure it for the [testnet](./glossary.md#testnet) and [mainnet](./glossary.md#mainnet) networks used by this project, and verify that your environment works end to end.
 
@@ -121,25 +121,29 @@ mkdir -p ~/cardano/config/{testnet,mainnet}
 mkdir -p ~/cardano/db/{testnet,mainnet}
 ```
 
-Download the latest configuration files. Replace the URLs with the current ones from the [official environment docs](https://book.world.dev.cardano.org/environments.html):
+Download the latest configuration files from the [official environment docs](https://book.world.dev.cardano.org/environments.html):
 
 ```bash
 # Testnet (preprod magic 1097911063)
 cd ~/cardano/config/testnet
-curl -O https://book.world.dev.cardano.org/testnet-configs/preprod/config.json
-curl -O https://book.world.dev.cardano.org/testnet-configs/preprod/topology.json
-curl -O https://book.world.dev.cardano.org/testnet-configs/preprod/byron-genesis.json
-curl -O https://book.world.dev.cardano.org/testnet-configs/preprod/shelley-genesis.json
-curl -O https://book.world.dev.cardano.org/testnet-configs/preprod/alonzo-genesis.json
+curl -L -O https://book.world.dev.cardano.org/environments/preprod/config.json
+curl -L -O https://book.world.dev.cardano.org/environments/preprod/topology.json
+curl -L -O https://book.world.dev.cardano.org/environments/preprod/byron-genesis.json
+curl -L -O https://book.world.dev.cardano.org/environments/preprod/shelley-genesis.json
+curl -L -O https://book.world.dev.cardano.org/environments/preprod/alonzo-genesis.json
+curl -L -O https://book.world.dev.cardano.org/environments/preprod/conway-genesis.json
 
 # Mainnet
 cd ~/cardano/config/mainnet
-curl -O https://book.world.dev.cardano.org/mainnet-configs/mainnet-config.json
-curl -O https://book.world.dev.cardano.org/mainnet-configs/mainnet-topology.json
-curl -O https://book.world.dev.cardano.org/mainnet-configs/mainnet-byron-genesis.json
-curl -O https://book.world.dev.cardano.org/mainnet-configs/mainnet-shelley-genesis.json
-curl -O https://book.world.dev.cardano.org/mainnet-configs/mainnet-alonzo-genesis.json
+curl -L -O https://book.world.dev.cardano.org/environments/mainnet/config.json
+curl -L -O https://book.world.dev.cardano.org/environments/mainnet/topology.json
+curl -L -O https://book.world.dev.cardano.org/environments/mainnet/byron-genesis.json
+curl -L -O https://book.world.dev.cardano.org/environments/mainnet/shelley-genesis.json
+curl -L -O https://book.world.dev.cardano.org/environments/mainnet/alonzo-genesis.json
+curl -L -O https://book.world.dev.cardano.org/environments/mainnet/conway-genesis.json
 ```
+
+> **Note:** Always verify downloaded files are valid JSON (not HTML error pages). Use `python3 -m json.tool <file>` to validate.
 
 ## 5. Start a node (optional but recommended)
 
@@ -157,6 +161,59 @@ cardano-node run \
 ```
 
 Leave the node running in a dedicated terminal or background service manager (launchd, systemd, tmux).
+
+### Expected startup behavior
+
+When `cardano-node` starts, you'll see various log messages. The following are **normal and expected**:
+
+#### Peer connection attempts
+
+The node attempts to connect to peers listed in `topology.json`. You may see messages like:
+
+```
+[cardano.node.PeerSelectionActions:Error] PeerStatusChangeFailure (ColdToWarm Nothing 3.127.163.30:3001) 
+  (HandshakeClientFailure (HandshakeProtocolError (HandshakeError (VersionMismatch [] [14]))))
+```
+
+**This is normal.** The node tries multiple peers, and some may:
+- Be running incompatible protocol versions
+- Be temporarily unreachable
+- Reject connections for various reasons
+
+The node will continue trying other peers until it finds compatible ones.
+
+#### Connection manager status
+
+During startup, connection counters may show zeros:
+
+```
+TrConnectionManagerCounters (ConnectionManagerCounters {
+  fullDuplexConns = 0, 
+  duplexConns = 0, 
+  unidirectionalConns = 0, 
+  inboundConns = 0, 
+  outboundConns = 0
+})
+```
+
+**This is expected** during initial connection attempts. Once peers are established, these values will increase.
+
+#### Peer selection progress
+
+Watch for these indicators of successful connection:
+
+- `viewEstablishedPeers > 0` — connections established
+- `viewActivePeers > 0` — active peer connections
+- `ChainSyncClient` or `ChainSyncHeaderServer` messages — chain synchronization in progress
+
+#### When to be concerned
+
+Only worry if you see:
+- **Repeated failures to all peers** — check your network connection and topology.json
+- **Database errors** — verify database path permissions
+- **Configuration parsing errors** — ensure config files are valid JSON (not HTML error pages)
+
+The node typically takes several minutes to establish connections and begin syncing. Be patient during the initial startup phase.
 
 ## 6. Environment variables
 
@@ -209,7 +266,8 @@ You should see the current slot, block, and block hash. If the command hangs, co
 
 - **`cardano-cli: command not found`** — ensure `/opt/homebrew/bin` or `~/.local/bin` is on `PATH`.
 - **`cardano-cli: Network.Socket.connect: <socket: xx>`** — the node is not running or the socket path is incorrect. Re-check `CARDANO_NODE_SOCKET_PATH`.
-- **`Failed reading: not a valid json value`** — ensure the downloaded config files are not HTML error pages; re-download and verify checksums if available.
+- **`Failed reading: not a valid json value`** or **`AesonException "expected Object, but encountered String"`** — ensure the downloaded config files are valid JSON (not HTML error pages). Re-download using the URLs above and verify with `python3 -m json.tool <file>`.
+- **Version mismatch errors during startup** — see [Expected startup behavior](#expected-startup-behavior) above. These are normal and the node will continue trying other peers.
 - **Slow synchronization** — use community relays (preprod, preview) or connect to a remote service instead of running your own node for quick testing.
 
 With `cardano-cli` installed and configured, you can complete the steps in `docs/testnet-deployment.md` and `docs/mainnet-migration.md` without additional setup.
