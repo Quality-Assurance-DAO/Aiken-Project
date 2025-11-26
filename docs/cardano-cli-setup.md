@@ -47,11 +47,13 @@ brew install libsodium secp256k1
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
 source ~/.ghcup/env   # Ensures this shell sees ~/.ghcup/bin
-ghcup install ghc 9.6.3
-ghcup set ghc 9.6.3
+ghcup install ghc 8.10.7
+ghcup set ghc 8.10.7
 ghcup install cabal 3.10.2.1
 ghcup set cabal 3.10.2.1
 ```
+
+> **Important:** cardano-node requires GHC 8.10.7 (not 9.6.3). GHC 9.6.3 comes with `base-4.21.0.0`, which is incompatible with `vector-0.13.1.0`'s requirement of `base < 4.21`.
 
 > **Note:** If `ghcup` still is not found in new shells, add `export PATH="$HOME/.ghcup/bin:$PATH"` to your `~/.zshrc` (or equivalent) and reload it.
 
