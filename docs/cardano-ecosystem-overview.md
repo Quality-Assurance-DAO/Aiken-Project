@@ -71,9 +71,13 @@ This project provides deployment guides for both testnet (for development) and m
 - Transaction building follows Cardano protocol specifications
 
 **Configuration Requirements**:
-- Socket path to Cardano Node
-- Network flag (`--testnet-magic` or `--mainnet`)
+- Socket path to Cardano Node (network-specific: `preprod-socket/`, `preview-socket/`, or `mainnet-socket/`)
+- Network flag:
+  - Preprod: `--testnet-magic 1`
+  - Preview: `--testnet-magic 2`
+  - Mainnet: `--mainnet`
 - Key files for signing transactions
+- Network-specific database directories (`db-preprod/`, `db-preview/`, `db-mainnet/`) to prevent NetworkMagic conflicts
 
 **Project Integration**: 
 - Deployment scripts (`scripts/deploy.sh`) use Cardano CLI
@@ -234,5 +238,6 @@ For new contributors:
 - [Solution Architecture](./solution-architecture.md) - Project structure and module boundaries
 - [Repository Inventory](./repository-inventory.md) - Complete catalog of project components
 - [Cardano CLI Setup](./cardano-cli-setup.md) - Installation and configuration guide
+
 
 

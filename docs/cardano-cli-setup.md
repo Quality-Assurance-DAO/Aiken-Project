@@ -114,24 +114,55 @@ The latest run-through of these steps on an M1 Pro (macOS 15) surfaced a few fix
 
 ## 4. Network configuration
 
-Create a working directory for Cardano network artifacts:
+This project supports three Cardano networks, each with separate configurations and database directories:
+
+| Network | Network Magic | Purpose | Database Directory | Socket Directory |
+|---------|--------------|---------|-------------------|------------------|
+| **Preprod** | `1` | Stable testnet for production-like testing | `db-preprod/` | `preprod-socket/` |
+| **Preview** | `2` | Bleeding-edge testnet for latest features | `db-preview/` | `preview-socket/` |
+| **Mainnet** | N/A (use `--mainnet`) | Production network | `db-mainnet/` | `mainnet-socket/` |
+
+> **Important:** Each network uses a separate database directory to prevent NetworkMagic conflicts. Never share database directories between networks.
+
+### Using project-provided configurations
+
+This project includes pre-configured network files in the `share/` directory:
+
+- `share/preprod/` - Preprod testnet configuration (NetworkMagic 1)
+- `share/preview/` - Preview testnet configuration (NetworkMagic 2)
+- `share/mainnet/` - Mainnet configuration
+
+These configurations are ready to use with the project's startup scripts. No manual download required.
+
+### Manual configuration (optional)
+
+If you prefer to manage configurations separately, create directories and download from the [official environment docs](https://book.world.dev.cardano.org/environments.html):
 
 ```bash
-mkdir -p ~/cardano/config/{testnet,mainnet}
-mkdir -p ~/cardano/db/{testnet,mainnet}
+mkdir -p ~/cardano/config/{preprod,preview,mainnet}
+mkdir -p ~/cardano/db/{preprod,preview,mainnet}
 ```
 
-Download the latest configuration files from the [official environment docs](https://book.world.dev.cardano.org/environments.html):
+Download configuration files:
 
 ```bash
-# Testnet (preprod magic 1097911063)
-cd ~/cardano/config/testnet
+# Preprod testnet (NetworkMagic 1)
+cd ~/cardano/config/preprod
 curl -L -O https://book.world.dev.cardano.org/environments/preprod/config.json
 curl -L -O https://book.world.dev.cardano.org/environments/preprod/topology.json
 curl -L -O https://book.world.dev.cardano.org/environments/preprod/byron-genesis.json
 curl -L -O https://book.world.dev.cardano.org/environments/preprod/shelley-genesis.json
 curl -L -O https://book.world.dev.cardano.org/environments/preprod/alonzo-genesis.json
 curl -L -O https://book.world.dev.cardano.org/environments/preprod/conway-genesis.json
+
+# Preview testnet (NetworkMagic 2)
+cd ~/cardano/config/preview
+curl -L -O https://book.world.dev.cardano.org/environments/preview/config.json
+curl -L -O https://book.world.dev.cardano.org/environments/preview/topology.json
+curl -L -O https://book.world.dev.cardano.org/environments/preview/byron-genesis.json
+curl -L -O https://book.world.dev.cardano.org/environments/preview/shelley-genesis.json
+curl -L -O https://book.world.dev.cardano.org/environments/preview/alonzo-genesis.json
+curl -L -O https://book.world.dev.cardano.org/environments/preview/conway-genesis.json
 
 # Mainnet
 cd ~/cardano/config/mainnet
@@ -149,16 +180,113 @@ curl -L -O https://book.world.dev.cardano.org/environments/mainnet/conway-genesi
 
 You can either connect to a locally running node or point `cardano-cli` to a remote relay. For local development:
 
+### Using the project's startup script
+
+This project includes a startup script for convenience:
+
 ```bash
-# Example: start a preprod relay
-cardano-node run \
-  --topology ~/cardano/config/testnet/topology.json \
-  --database-path ~/cardano/db/testnet \
-  --socket-path ~/cardano/db/testnet/node.socket \
-  --host-addr 0.0.0.0 \
-  --port 3001 \
-  --config ~/cardano/config/testnet/config.json
+# Start Preprod node (default)
+./scripts/start_node.sh preprod
+
+# Or start Preview node
+./scripts/start_node.sh preview
+
+# Or start Mainnet node
+./scripts/start_node.sh mainnet
 ```
+
+### Disk space requirements
+
+Before starting a node, ensure you have sufficient disk space. The Cardano node database grows continuously as it syncs and stores blockchain data.
+
+**Official Requirements:**
+
+| Network | Minimum | Recommended | Current Size (2024) |
+|---------|---------|-------------|---------------------|
+| **Mainnet** | 150 GB | 250 GB+ | ~184 GB |
+| **Testnets** (Preprod/Preview) | 20 GB | 30-50 GB | 10-20 GB (fully synced) |
+
+**Database Structure:**
+
+The node stores data in three main components:
+
+1. **Immutable blocks** (~95% of space)
+   - Historical blockchain data
+   - Grows continuously as new blocks are added (~20 seconds per block)
+   - Located in `immutable/` subdirectory
+
+2. **Ledger state** (~2-5% of space)
+   - Current UTXO set and smart contract state
+   - Grows with network activity
+   - Located in `ledger/` subdirectory
+
+3. **Volatile blocks** (~1-2% of space)
+   - Recent blocks being processed
+   - Relatively stable size
+   - Located in `volatile/` subdirectory
+
+**Example Database Sizes:**
+
+From a partially synced preprod testnet:
+- Total: ~1.2 GB
+  - Immutable blocks: ~1.1 GB
+  - Ledger state: ~33 MB
+  - Volatile: ~51 MB
+
+**Important Notes:**
+
+- **Database persistence**: The node stores all blockchain data persistently. When you restart the node, it resumes from the existing database and only syncs new blocks that arrived while offline. It does **not** resync from scratch.
+- **Continuous growth**: The blockchain grows over time as new blocks are added. Allocate more space than the current minimum to accommodate future growth.
+- **SSD recommended**: Using an SSD significantly improves sync speed and node performance.
+- **Monitor disk usage**: Regularly check available disk space, especially for mainnet nodes.
+
+**Checking Database Size:**
+
+```bash
+# Check size of a specific database directory
+du -sh db-preprod
+
+# Check breakdown by component
+du -sh db-preprod/immutable db-preprod/ledger db-preprod/volatile
+```
+
+### Manual node startup
+
+Alternatively, you can start the node manually. **Important:** Use the correct database directory for each network:
+
+```bash
+# Preprod (NetworkMagic 1)
+cd share/preprod
+cardano-node run \
+  --config config.json \
+  --topology topology.json \
+  --database-path ../../db-preprod \
+  --socket-path ../../preprod-socket/node.socket \
+  --host-addr 127.0.0.1 \
+  --port 3001
+
+# Preview (NetworkMagic 2)
+cd share/preview
+cardano-node run \
+  --config config.json \
+  --topology topology.json \
+  --database-path ../../db-preview \
+  --socket-path ../../preview-socket/node.socket \
+  --host-addr 127.0.0.1 \
+  --port 3001
+
+# Mainnet
+cd share/mainnet
+cardano-node run \
+  --config config.json \
+  --topology topology.json \
+  --database-path ../../db-mainnet \
+  --socket-path ../../mainnet-socket/node.socket \
+  --host-addr 127.0.0.1 \
+  --port 3001
+```
+
+> **Warning:** Using the wrong database directory will cause a `NetworkMagicMismatch` error. Each network must use its own database directory.
 
 Leave the node running in a dedicated terminal or background service manager (launchd, systemd, tmux).
 
@@ -234,14 +362,31 @@ The time depends on whether you're starting fresh or resuming:
 - **Network load** — testnets are typically faster than mainnet
 - **Database state** — resuming from existing database is much faster than starting fresh
 
+**Database Persistence:**
+- The node stores all blockchain data persistently in the database directory
+- When you stop and restart the node, it **does not resync from scratch**
+- It reads the existing blockchain state and only syncs new blocks that arrived while offline
+- This means restarting is fast — typically just a few minutes to catch up on new blocks
+
 **Monitoring Progress:**
 
-Check sync status with:
+Check sync status with the appropriate network magic:
 
 ```bash
+# Preprod (NetworkMagic 1)
 cardano-cli query tip \
-  --testnet-magic 1097911063 \
-  --socket-path ~/cardano/db/testnet/node.socket
+  --testnet-magic 1 \
+  --socket-path preprod-socket/node.socket
+
+# Preview (NetworkMagic 2)
+cardano-cli query tip \
+  --testnet-magic 2 \
+  --socket-path preview-socket/node.socket
+
+# Mainnet
+cardano-cli query tip \
+  --mainnet \
+  --socket-path mainnet-socket/node.socket
 ```
 
 Look for:
@@ -255,6 +400,49 @@ Look for:
 - **Within 30-60 minutes:** Significant progress on testnet (if resuming from existing database)
 - **Within 2-6 hours:** Fully synced on testnet (fresh start)
 
+#### After sync completes
+
+Once your node reaches `syncProgress: "100.00"`, it enters **steady-state operation**:
+
+**What the node continues doing:**
+1. **Stays synchronized** — Continuously receives and validates new blocks as they're produced (typically every ~20 seconds on Cardano)
+2. **Maintains peer connections** — Keeps connections to other nodes for block propagation
+3. **Serves queries** — Responds to `cardano-cli` queries (UTXO, tip, protocol parameters, etc.)
+4. **Validates transactions** — Validates transactions in the mempool and new blocks
+5. **Updates chain state** — Maintains the current blockchain state in its database
+
+**What you can do:**
+- **Query the blockchain** — Use `cardano-cli` to query UTXOs, addresses, protocol parameters
+- **Build transactions** — Create and submit transactions using the synced node
+- **Test smart contracts** — Deploy and interact with smart contracts on the testnet
+- **Monitor the network** — Watch new blocks being added in real-time
+
+**Log activity after sync:**
+- You'll see fewer "Chain extended" messages (only when new blocks arrive, typically every 20 seconds)
+- More "Block fits onto some fork" messages as new blocks arrive
+- Steady peer connection maintenance messages
+- Mempool activity if transactions are being submitted
+
+**The node keeps running:**
+- The node process continues running indefinitely
+- It automatically stays synchronized with the network
+- No manual intervention needed — just leave it running
+- You can safely minimize the terminal or run it in the background
+
+**Verifying sync status:**
+Check that `syncProgress` is at 100%. Run this from the **project root directory** (`/Users/stephen/Documents/GitHub/Aiken-Project`):
+
+```bash
+# From project root directory
+cardano-cli query tip \
+  --testnet-magic 1 \
+  --socket-path preprod-socket/node.socket | jq .syncProgress
+```
+
+You should see `"100.00"` when fully synced.
+
+> **Note:** The socket path is relative to where you run the command. If you're in a different directory, use an absolute path like `$HOME/Aiken-Project/preprod-socket/node.socket` or set the `CARDANO_NODE_SOCKET_PATH` environment variable.
+
 #### When to be concerned
 
 Only worry if you see:
@@ -267,17 +455,34 @@ Be patient during the initial startup phase, especially on first-time sync.
 
 ## 6. Environment variables
 
-Add the following exports to `~/.zshrc` (or your shell profile) to make CLI commands less verbose:
+### Using the project's environment setup script
+
+This project includes an environment setup script:
 
 ```bash
-# Cardano CLI defaults
-export CARDANO_NODE_SOCKET_PATH=$HOME/cardano/db/testnet/node.socket
-export CARDANO_TESTNET_MAGIC=1097911063
+# Source the environment setup for Preprod (default)
+source scripts/setup_env.sh preprod
+
+# Or for Preview
+source scripts/setup_env.sh preview
+
+# Or for Mainnet
+source scripts/setup_env.sh mainnet
+```
+
+### Manual environment setup
+
+Alternatively, add the following exports to `~/.zshrc` (or your shell profile) to make CLI commands less verbose:
+
+```bash
+# Cardano CLI defaults (for Preprod)
+export CARDANO_NODE_SOCKET_PATH=$HOME/Aiken-Project/preprod-socket/node.socket
+export CARDANO_TESTNET_MAGIC=1
 
 # Convenience wrappers
-cardano_testnet() {
+cardano_preprod() {
   cardano-cli "$@" \
-    --testnet-magic "${CARDANO_TESTNET_MAGIC}" \
+    --testnet-magic 1 \
     --socket-path "${CARDANO_NODE_SOCKET_PATH}"
 }
 ```
@@ -305,9 +510,20 @@ cardano-cli --version
 Verify network connectivity:
 
 ```bash
+# Preprod (NetworkMagic 1)
 cardano-cli query tip \
-  --testnet-magic 1097911063 \
-  --socket-path ~/cardano/db/testnet/node.socket
+  --testnet-magic 1 \
+  --socket-path preprod-socket/node.socket
+
+# Preview (NetworkMagic 2)
+cardano-cli query tip \
+  --testnet-magic 2 \
+  --socket-path preview-socket/node.socket
+
+# Mainnet
+cardano-cli query tip \
+  --mainnet \
+  --socket-path mainnet-socket/node.socket
 ```
 
 You should see the current slot, block, and block hash. If the command hangs, confirm that the node is fully synchronized and the socket path is correct.
@@ -316,6 +532,11 @@ You should see the current slot, block, and block hash. If the command hangs, co
 
 - **`cardano-cli: command not found`** — ensure `/opt/homebrew/bin` or `~/.local/bin` is on `PATH`.
 - **`cardano-cli: Network.Socket.connect: <socket: xx>`** — the node is not running or the socket path is incorrect. Re-check `CARDANO_NODE_SOCKET_PATH`.
+- **`NetworkMagicMismatch` error** — you're trying to use a database directory from a different network. Each network (preprod, preview, mainnet) requires its own database directory:
+  - Preprod: `db-preprod/` (NetworkMagic 1)
+  - Preview: `db-preview/` (NetworkMagic 2)
+  - Mainnet: `db-mainnet/` (no magic)
+  - Solution: Delete the conflicting database directory or use the correct one for your network.
 - **`Failed reading: not a valid json value`** or **`AesonException "expected Object, but encountered String"`** — ensure the downloaded config files are valid JSON (not HTML error pages). Re-download using the URLs above and verify with `python3 -m json.tool <file>`.
 - **Version mismatch errors during startup** — see [Expected startup behavior](#expected-startup-behavior) above. These are normal and the node will continue trying other peers.
 - **Slow synchronization** — use community relays (preprod, preview) or connect to a remote service instead of running your own node for quick testing.

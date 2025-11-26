@@ -11,8 +11,8 @@ This directory contains all project documentation organized by category.
 - [Solution Architecture](./solution-architecture.md) - Project structure and module boundaries
 
 ### Setup
-- [Cardano CLI Setup](./cardano-cli-setup.md) - Install and configure Cardano CLI tools
-- [Testnet Deployment](./testnet-deployment.md) - Step-by-step testnet deployment guide
+- [Cardano CLI Setup](./cardano-cli-setup.md) - Install and configure Cardano CLI tools (includes network configuration)
+- [Testnet Deployment](./testnet-deployment.md) - Step-by-step testnet deployment guide (Preprod and Preview)
 
 ### Deployment
 - [Mainnet Migration](./mainnet-migration.md) - Checklist for promoting to mainnet
@@ -73,5 +73,6 @@ Home > Category > Document Title
 - [Cardano Ecosystem Overview](./cardano-ecosystem-overview.md) - Understand Cardano context
 - [Testing Guide](./testing-guide.md) - Run and understand tests
 - [Contribution Guide](./contribution-guide.md) - Add documentation
+
 
 

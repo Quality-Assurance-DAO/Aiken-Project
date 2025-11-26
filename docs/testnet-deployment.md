@@ -9,6 +9,15 @@
 
 This guide provides step-by-step instructions for deploying the [milestone token distribution](./glossary.md#milestone-token-distribution) system to Cardano [testnet](./glossary.md#testnet).
 
+## Network Selection
+
+This project supports two Cardano testnets:
+
+- **Preprod** (NetworkMagic 1) - Stable testnet, recommended for production-like testing
+- **Preview** (NetworkMagic 2) - Bleeding-edge testnet for testing latest features
+
+Choose Preprod for stable testing or Preview for testing cutting-edge features. Both networks use test tokens (tADA) and have separate database directories to prevent conflicts.
+
 ## Prerequisites
 
 - Aiken development environment installed
@@ -16,6 +25,15 @@ This guide provides step-by-step instructions for deploying the [milestone token
 - Access to Cardano [testnet](./glossary.md#testnet) node or API
 - Testnet ADA for transaction fees
 - Test signing keys for contract deployment
+
+> **Note:** Set up your environment for the chosen network:
+> ```bash
+> # For Preprod
+> source scripts/setup_env.sh preprod
+> 
+> # For Preview
+> source scripts/setup_env.sh preview
+> ```
 
 ## Step-by-Step Deployment
 
@@ -49,35 +67,57 @@ Create `test-data/oracles.json`:
 ### 2. Mint Test Tokens
 
 ```bash
+# For Preprod (NetworkMagic 1)
 ./scripts/mint_test_tokens.sh \
   --policy-id <your-policy-id> \
   --amount 10000000 \
-  --testnet
+  --testnet-magic 1
+
+# For Preview (NetworkMagic 2)
+./scripts/mint_test_tokens.sh \
+  --policy-id <your-policy-id> \
+  --amount 10000000 \
+  --testnet-magic 2
 ```
 
 ### 3. Create Distribution Contract
 
 ```bash
+# For Preprod (NetworkMagic 1)
 aiken-distribution create \
   --allocations-file test-data/allocations.json \
   --oracles-file test-data/oracles.json \
   --quorum-threshold 3 \
   --token-policy-id <policy-id> \
   --output-datum contract-datum.json \
-  --testnet
+  --testnet-magic 1
+
+# For Preview (NetworkMagic 2)
+aiken-distribution create \
+  --allocations-file test-data/allocations.json \
+  --oracles-file test-data/oracles.json \
+  --quorum-threshold 3 \
+  --token-policy-id <policy-id> \
+  --output-datum contract-datum.json \
+  --testnet-magic 2
 ```
 
 ### 4. Deploy Contract
 
 ```bash
-./scripts/deploy.sh testnet contract-datum.json <contract-address>
+# For Preprod
+./scripts/deploy.sh preprod contract-datum.json <contract-address>
+
+# For Preview
+./scripts/deploy.sh preview contract-datum.json <contract-address>
 ```
 
 Or manually using Cardano CLI:
 
 ```bash
+# For Preprod (NetworkMagic 1)
 cardano-cli transaction build \
-  --testnet-magic 1097911063 \
+  --testnet-magic 1 \
   --tx-in <utxo> \
   --tx-out <contract-address>+<amount>+"<tokens>" \
   --tx-out-datum-file contract-datum.json \
@@ -88,20 +128,28 @@ cardano-cli transaction build \
 cardano-cli transaction sign \
   --tx-body-file tx.unsigned \
   --signing-key-file <key-file> \
-  --testnet-magic 1097911063 \
+  --testnet-magic 1 \
   --out-file tx.signed
 
 cardano-cli transaction submit \
   --tx-file tx.signed \
-  --testnet-magic 1097911063
+  --testnet-magic 1
+
+# For Preview (NetworkMagic 2) - replace --testnet-magic 1 with --testnet-magic 2
 ```
 
 ### 5. Verify Deployment
 
 ```bash
+# For Preprod (NetworkMagic 1)
 cardano-cli query utxo \
   --address <contract-address> \
-  --testnet-magic 1097911063
+  --testnet-magic 1
+
+# For Preview (NetworkMagic 2)
+cardano-cli query utxo \
+  --address <contract-address> \
+  --testnet-magic 2
 ```
 
 ### 6. Simulate Oracle Signatures
@@ -117,12 +165,22 @@ cardano-cli query utxo \
 ### 7. Test Claim Transaction
 
 ```bash
+# For Preprod (NetworkMagic 1)
 aiken-distribution claim \
   --contract-address <address> \
   --beneficiary-index 0 \
   --milestone-verification-file test-data/verification.json \
   --signing-key-file beneficiary.skey \
-  --testnet \
+  --testnet-magic 1 \
+  --submit
+
+# For Preview (NetworkMagic 2)
+aiken-distribution claim \
+  --contract-address <address> \
+  --beneficiary-index 0 \
+  --milestone-verification-file test-data/verification.json \
+  --signing-key-file beneficiary.skey \
+  --testnet-magic 2 \
   --submit
 ```
 
@@ -131,18 +189,31 @@ aiken-distribution claim \
 ### Query Contract State
 
 ```bash
+# For Preprod (NetworkMagic 1)
 aiken-distribution query \
   --contract-address <address> \
-  --testnet \
+  --testnet-magic 1 \
+  --format json
+
+# For Preview (NetworkMagic 2)
+aiken-distribution query \
+  --contract-address <address> \
+  --testnet-magic 2 \
   --format json
 ```
 
 ### Check Transaction Status
 
 ```bash
+# For Preprod (NetworkMagic 1)
 cardano-cli query tx \
   --tx-id <transaction-hash> \
-  --testnet-magic 1097911063
+  --testnet-magic 1
+
+# For Preview (NetworkMagic 2)
+cardano-cli query tx \
+  --tx-id <transaction-hash> \
+  --testnet-magic 2
 ```
 
 ## Troubleshooting

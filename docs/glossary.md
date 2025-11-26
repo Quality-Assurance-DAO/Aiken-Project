@@ -21,8 +21,20 @@ Command-line interface tools for interacting with Cardano networks. The Cardano 
 ### Cardano Node
 The core Cardano blockchain node software that maintains the blockchain state, validates transactions, and participates in consensus. This project vendors the Cardano Node repository for local development and testing.
 
-**Related Terms**: [Cardano CLI](#cardano-cli), [Testnet](#testnet), [Mainnet](#mainnet)  
+**Related Terms**: [Cardano CLI](#cardano-cli), [Testnet](#testnet), [Mainnet](#mainnet), [Chain Tip](#chain-tip), [Fork](#fork)  
 **External Reference**: [Cardano Node Repository](https://github.com/intersectmbo/cardano-node)
+
+### Chain Tip
+The most recent block at the end of the best (longest) valid blockchain. The tip represents the current state of the blockchain from the node's perspective. When logs show "Chain extended, new tip", it means a new block was successfully added to the chain and is now the latest block. The tip changes as new blocks are added through consensus.
+
+**Related Terms**: [Fork](#fork), [Cardano Node](#cardano-node)  
+**Usage**: Query with `cardano-cli query tip` to see the current chain tip
+
+### Fork
+A blockchain fork occurs when there are multiple valid chain branches (alternative histories). When a node receives a block that "fits onto some fork", it means the block is valid and can be added to one of the possible chain branches, but it may not be on the main chain yet. The node will eventually select the longest valid chain as the canonical chain. Temporary forks are normal in distributed systems and resolve through consensus.
+
+**Related Terms**: [Chain Tip](#chain-tip), [Cardano Node](#cardano-node)  
+**Usage**: Log messages like "Block fits onto some fork" indicate normal blockchain operation
 
 ### CIP (Cardano Improvement Proposal)
 A formal proposal document describing improvements, standards, or features for the Cardano ecosystem. CIPs are numbered (e.g., CIP-68) and follow a standardized format. This project may reference CIPs for standards compliance.
@@ -45,8 +57,26 @@ Data attached to a UTXO in Cardano's extended UTXO (eUTXO) model. Datums store s
 ### Mainnet
 The production Cardano blockchain network where real ADA and assets are transacted. Mainnet is the live network used by end users. This project provides migration guides for deploying contracts to mainnet.
 
-**Related Terms**: [Testnet](#testnet), [Cardano Node](#cardano-node)  
+**Related Terms**: [Testnet](#testnet), [Cardano Node](#cardano-node), [Network Magic](#network-magic)  
 **External Reference**: [Cardano Mainnet](https://cardano.org/)
+
+### Network Magic
+A numeric identifier that distinguishes different Cardano networks. Testnets use network magic values (e.g., Preprod uses 1, Preview uses 2), while mainnet uses no magic value (specified with `--mainnet`). Network magic prevents accidental cross-network transactions and ensures database isolation.
+
+**Related Terms**: [Preprod](#preprod), [Preview](#preview), [Mainnet](#mainnet)  
+**Usage**: See `docs/cardano-cli-setup.md` for network configuration details
+
+### Preprod
+A stable Cardano testnet with NetworkMagic 1, designed for production-like testing. Preprod mirrors mainnet behavior and is recommended for final testing before mainnet deployment. This project uses separate database directories (`db-preprod/`) for Preprod.
+
+**Related Terms**: [Preview](#preview), [Testnet](#testnet), [Network Magic](#network-magic)  
+**Usage**: Start with `./scripts/start_node.sh preprod`
+
+### Preview
+A bleeding-edge Cardano testnet with NetworkMagic 2, used for testing the latest Cardano features and protocol updates. Preview may have more frequent changes than Preprod. This project uses separate database directories (`db-preview/`) for Preview.
+
+**Related Terms**: [Preprod](#preprod), [Testnet](#testnet), [Network Magic](#network-magic)  
+**Usage**: Start with `./scripts/start_node.sh preview`
 
 ### Oracle
 An external data source that provides information to smart contracts. In this project, oracles provide milestone completion data that triggers token distribution. The project uses an oracle quorum system where multiple oracle signatures are required.
@@ -83,9 +113,9 @@ Data provided when spending a UTXO that contains a validator script. Redeemers p
 **External Reference**: [Cardano Redeemer Documentation](https://docs.cardano.org/plutus/datumhash-redeemers/)
 
 ### Testnet
-A test network for Cardano that mirrors mainnet functionality but uses test tokens (tADA) instead of real ADA. Testnets allow developers to test smart contracts without financial risk. This project provides deployment guides for testnet.
+A test network for Cardano that mirrors mainnet functionality but uses test tokens (tADA) instead of real ADA. Testnets allow developers to test smart contracts without financial risk. This project supports two testnets: [Preprod](#preprod) (NetworkMagic 1) and [Preview](#preview) (NetworkMagic 2), each with separate database directories.
 
-**Related Terms**: [Mainnet](#mainnet), [Cardano Node](#cardano-node)  
+**Related Terms**: [Mainnet](#mainnet), [Cardano Node](#cardano-node), [Preprod](#preprod), [Preview](#preview), [Network Magic](#network-magic)  
 **External Reference**: [Cardano Testnet](https://docs.cardano.org/cardano-testnet/about/introduction/)
 
 ### Transaction
@@ -152,5 +182,6 @@ When adding new terms to this glossary:
 3. Include related terms and external references where applicable
 4. Add usage examples for project-specific terms
 5. Link to relevant documentation sections
+
 
 

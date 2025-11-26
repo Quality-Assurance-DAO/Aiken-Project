@@ -47,5 +47,11 @@ coverage/
 *.bak
 *.cache
 
+# Database directories
+db-preprod/
+db/
 
+# Cardano node binaries (too large for Git)
+bin/
+*.tar.gz
 
