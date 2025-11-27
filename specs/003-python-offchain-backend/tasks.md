@@ -43,13 +43,13 @@ This document provides an actionable, dependency-ordered task list for implement
 
 ### Setup Tasks
 
-- [ ] T001 Create project structure per implementation plan: offchain/offchain/, offchain/tests/, infra/, contracts/compiled/
-- [ ] T002 Create Python package structure with __init__.py files in offchain/offchain/ and offchain/tests/
-- [ ] T003 Create requirements.txt in offchain/ with pycardano>=0.9.0, typer>=0.9.0, websockets>=11.0, httpx>=0.25.0, pydantic>=2.0, pytest, pytest-asyncio
-- [ ] T004 Create setup.py or pyproject.toml in offchain/ for package installation
-- [ ] T005 [P] Create .gitignore in offchain/ to exclude __pycache__/, *.pyc, .venv/, data/, *.log
-- [ ] T006 [P] Create README.md in offchain/ with installation and usage instructions
-- [ ] T007 Create cli.py entry point in offchain/ with typer app initialization
+- [X] T001 Create project structure per implementation plan: offchain/offchain/, offchain/tests/, infra/, contracts/compiled/
+- [X] T002 Create Python package structure with __init__.py files in offchain/offchain/ and offchain/tests/
+- [X] T003 Create requirements.txt in offchain/ with pycardano>=0.9.0, typer>=0.9.0, websockets>=11.0, httpx>=0.25.0, pydantic>=2.0, pytest, pytest-asyncio
+- [X] T004 Create setup.py or pyproject.toml in offchain/ for package installation
+- [X] T005 [P] Create .gitignore in offchain/ to exclude __pycache__/, *.pyc, .venv/, data/, *.log
+- [X] T006 [P] Create README.md in offchain/ with installation and usage instructions
+- [X] T007 Create cli.py entry point in offchain/ with typer app initialization
 
 ## Phase 2: Foundational
 
@@ -61,18 +61,18 @@ This document provides an actionable, dependency-ordered task list for implement
 
 ### Foundational Tasks
 
-- [ ] T008 Implement NetworkConfiguration model in offchain/offchain/config.py with network, ogmios_url, kupo_url, cardano_node_socket fields
-- [ ] T009 Implement DataStorageConfiguration model in offchain/offchain/config.py with data_directory, milestones_directory, cache_directory fields
-- [ ] T010 Implement configuration loading logic in offchain/offchain/config.py to load from YAML file or environment variables
-- [ ] T011 Implement MilestoneSchedule model in offchain/offchain/models.py with token_policy_id, beneficiary_allocations, oracle_addresses, quorum_threshold, contract_metadata fields per data-model.md
-- [ ] T012 Implement BeneficiaryAllocationInput model in offchain/offchain/models.py with beneficiary_address, token_amount, milestone_identifier, vesting_timestamp fields
-- [ ] T013 Implement MilestoneCompletionData model in offchain/offchain/models.py with milestone_identifier, oracle_signatures, verification_timestamp, quorum_status, quorum_threshold, total_oracles fields
-- [ ] T014 Implement OracleSignatureData model in offchain/offchain/models.py with oracle_address, signature, signed_data, signature_timestamp fields
-- [ ] T015 Implement DistributionContractState model in offchain/offchain/models.py with contract_address, utxo_tx_hash, utxo_index, datum, beneficiary_allocations fields
-- [ ] T016 Implement ReleaseTransactionInput model in offchain/offchain/models.py with contract_address, beneficiary_address, beneficiary_index, milestone_identifier, signing_key_path fields
-- [ ] T017 Create docker-compose.yml in infra/ with cardano-node, ogmios, and kupo services
-- [ ] T018 Create config/ directory in infra/ with service configuration files for cardano-node, ogmios, kupo
-- [ ] T019 [P] Create validator_loader.py skeleton in offchain/offchain/validator_loader.py with function to load plutus.json
+- [X] T008 Implement NetworkConfiguration model in offchain/offchain/config.py with network, ogmios_url, kupo_url, cardano_node_socket fields
+- [X] T009 Implement DataStorageConfiguration model in offchain/offchain/config.py with data_directory, milestones_directory, cache_directory fields
+- [X] T010 Implement configuration loading logic in offchain/offchain/config.py to load from YAML file or environment variables
+- [X] T011 Implement MilestoneSchedule model in offchain/offchain/models.py with token_policy_id, beneficiary_allocations, oracle_addresses, quorum_threshold, contract_metadata fields per data-model.md
+- [X] T012 Implement BeneficiaryAllocationInput model in offchain/offchain/models.py with beneficiary_address, token_amount, milestone_identifier, vesting_timestamp fields
+- [X] T013 Implement MilestoneCompletionData model in offchain/offchain/models.py with milestone_identifier, oracle_signatures, verification_timestamp, quorum_status, quorum_threshold, total_oracles fields
+- [X] T014 Implement OracleSignatureData model in offchain/offchain/models.py with oracle_address, signature, signed_data, signature_timestamp fields
+- [X] T015 Implement DistributionContractState model in offchain/offchain/models.py with contract_address, utxo_tx_hash, utxo_index, datum, beneficiary_allocations fields
+- [X] T016 Implement ReleaseTransactionInput model in offchain/offchain/models.py with contract_address, beneficiary_address, beneficiary_index, milestone_identifier, signing_key_path fields
+- [X] T017 Create docker-compose.yml in infra/ with cardano-node, ogmios, and kupo services
+- [X] T018 Create config/ directory in infra/ with service configuration files for cardano-node, ogmios, kupo
+- [X] T019 [P] Create validator_loader.py skeleton in offchain/offchain/validator_loader.py with function to load plutus.json
 
 ## Phase 3: User Story 1 - Administrator Initializes Off-Chain Environment (P1)
 
@@ -90,17 +90,17 @@ This document provides an actionable, dependency-ordered task list for implement
 
 ### User Story 1 Tasks
 
-- [ ] T020 [US1] Implement OgmiosClient class skeleton in offchain/offchain/ogmios_client.py with async WebSocket connection handling
-- [ ] T021 [US1] Implement connectivity check method in offchain/offchain/ogmios_client.py to verify Ogmios service availability
-- [ ] T022 [US1] Implement KupoClient class skeleton in offchain/offchain/kupo_client.py with HTTP client initialization
-- [ ] T023 [US1] Implement connectivity check method in offchain/offchain/kupo_client.py to verify Kupo service availability
-- [ ] T024 [US1] Implement cardano-node connectivity check in offchain/offchain/config.py to verify node socket accessibility
-- [ ] T025 [US1] Implement init command in offchain/cli.py to call connectivity checks for all services
-- [ ] T026 [US1] Implement service status reporting in offchain/cli.py init command with JSON output format
-- [ ] T027 [US1] Implement error handling in offchain/cli.py init command to report missing services with guidance
-- [ ] T028 [US1] Create unit test for OgmiosClient connectivity in offchain/tests/unit/test_ogmios_client.py with mocked WebSocket
-- [ ] T029 [US1] Create unit test for KupoClient connectivity in offchain/tests/unit/test_kupo_client.py with mocked HTTP client
-- [ ] T030 [US1] Create integration test for init command in offchain/tests/integration/test_init.py with real services (if available)
+- [X] T020 [US1] Implement OgmiosClient class skeleton in offchain/offchain/ogmios_client.py with async WebSocket connection handling
+- [X] T021 [US1] Implement connectivity check method in offchain/offchain/ogmios_client.py to verify Ogmios service availability
+- [X] T022 [US1] Implement KupoClient class skeleton in offchain/offchain/kupo_client.py with HTTP client initialization
+- [X] T023 [US1] Implement connectivity check method in offchain/offchain/kupo_client.py to verify Kupo service availability
+- [X] T024 [US1] Implement cardano-node connectivity check in offchain/offchain/config.py to verify node socket accessibility
+- [X] T025 [US1] Implement init command in offchain/cli.py to call connectivity checks for all services
+- [X] T026 [US1] Implement service status reporting in offchain/cli.py init command with JSON output format
+- [X] T027 [US1] Implement error handling in offchain/cli.py init command to report missing services with guidance
+- [X] T028 [US1] Create unit test for OgmiosClient connectivity in offchain/tests/unit/test_ogmios_client.py with mocked WebSocket
+- [X] T029 [US1] Create unit test for KupoClient connectivity in offchain/tests/unit/test_kupo_client.py with mocked HTTP client
+- [X] T030 [US1] Create integration test for init command in offchain/tests/integration/test_init.py with real services (if available)
 
 ## Phase 4: User Story 2 - Administrator Registers New Milestone Schedule (P1)
 
@@ -118,16 +118,16 @@ This document provides an actionable, dependency-ordered task list for implement
 
 ### User Story 2 Tasks
 
-- [ ] T031 [US2] Implement MilestoneSchedule validation logic in offchain/offchain/models.py to validate addresses, amounts, quorum threshold
-- [ ] T032 [US2] Implement datum generation logic in offchain/offchain/milestone_manager.py to convert MilestoneSchedule to on-chain datum format
-- [ ] T033 [US2] Implement contract address calculation in offchain/offchain/milestone_manager.py using validator hash from plutus.json
-- [ ] T034 [US2] Implement register-milestone command in offchain/cli.py to accept milestone schedule input from JSON file or CLI arguments
-- [ ] T035 [US2] Implement input validation in offchain/cli.py register-milestone command for beneficiary addresses, token amounts, milestone identifiers
-- [ ] T036 [US2] Implement datum output formatting in offchain/cli.py register-milestone command with JSON output
-- [ ] T037 [US2] Implement error handling in offchain/cli.py register-milestone command for validation failures
-- [ ] T038 [US2] Create unit test for MilestoneSchedule validation in offchain/tests/unit/test_milestone_manager.py with valid and invalid inputs
-- [ ] T039 [US2] Create unit test for datum generation in offchain/tests/unit/test_milestone_manager.py with sample milestone schedule
-- [ ] T040 [US2] Create integration test for register-milestone command in offchain/tests/integration/test_register_milestone.py with end-to-end flow
+- [X] T031 [US2] Implement MilestoneSchedule validation logic in offchain/offchain/milestone_manager.py to validate addresses, amounts, quorum threshold
+- [X] T032 [US2] Implement datum generation logic in offchain/offchain/milestone_manager.py to convert MilestoneSchedule to on-chain datum format
+- [X] T033 [US2] Implement contract address calculation in offchain/offchain/milestone_manager.py using validator hash from plutus.json
+- [X] T034 [US2] Implement register-milestone command in offchain/cli.py to accept milestone schedule input from JSON file or CLI arguments
+- [X] T035 [US2] Implement input validation in offchain/cli.py register-milestone command for beneficiary addresses, token amounts, milestone identifiers
+- [X] T036 [US2] Implement datum output formatting in offchain/cli.py register-milestone command with JSON output
+- [X] T037 [US2] Implement error handling in offchain/cli.py register-milestone command for validation failures
+- [X] T038 [US2] Create unit test for MilestoneSchedule validation in offchain/tests/unit/test_milestone_manager.py with valid and invalid inputs
+- [X] T039 [US2] Create unit test for datum generation in offchain/tests/unit/test_milestone_manager.py with sample milestone schedule
+- [X] T040 [US2] Create integration test for register-milestone command in offchain/tests/integration/test_register_milestone.py with end-to-end flow
 
 ## Phase 5: User Story 3 - Administrator Commits Milestone Completion Data (P2)
 

@@ -1,0 +1,23 @@
+# Python Off-Chain Backend Dependencies
+# Cardano transaction building and utilities
+pycardano>=0.9.0
+
+# CLI framework
+typer>=0.9.0
+
+# WebSocket client for Ogmios
+websockets>=11.0
+
+# HTTP client for Kupo
+httpx>=0.25.0
+
+# Data validation
+pydantic>=2.0
+
+# Testing
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+
+# Additional utilities
+pyyaml>=6.0
+

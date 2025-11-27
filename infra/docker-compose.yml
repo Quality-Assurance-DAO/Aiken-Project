@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  cardano-node:
+    image: inputoutput/cardano-node:latest
+    container_name: cardano-node
+    volumes:
+      - ./config:/config
+      - cardano-node-db:/data
+      - cardano-node-socket:/ipc
+    environment:
+      - NETWORK=${NETWORK:-testnet}
+    command:
+      - run
+      - --config
+      - /config/config.json
+      - --topology
+      - /config/topology.json
+      - --database-path
+      - /data
+      - --socket-path
+      - /ipc/node.socket
+      - --port
+      - "3001"
+    networks:
+      - cardano-network
+    restart: unless-stopped
+
+  ogmios:
+    image: cardanosolutions/ogmios:latest
+    container_name: ogmios
+    depends_on:
+      - cardano-node
+    volumes:
+      - cardano-node-socket:/ipc
+    ports:
+      - "1337:1337"
+    environment:
+      - OGMIOS_HOST=0.0.0.0
+      - OGMIOS_PORT=1337
+      - OGMIOS_NODE_SOCKET=/ipc/node.socket
+      - OGMIOS_NODE_NETWORK=${NETWORK:-testnet}
+    networks:
+      - cardano-network
+    restart: unless-stopped
+
+  kupo:
+    image: cardanosolutions/kupo:latest
+    container_name: kupo
+    depends_on:
+      - cardano-node
+    volumes:
+      - cardano-node-socket:/ipc
+      - kupo-db:/data
+    ports:
+      - "1442:1442"
+    environment:
+      - KUPO_HOST=0.0.0.0
+      - KUPO_PORT=1442
+      - KUPO_NODE_SOCKET=/ipc/node.socket
+      - KUPO_NODE_CONFIG=/config/config.json
+      - KUPO_DB_PATH=/data
+      - KUPO_SERVER_HOST=0.0.0.0
+      - KUPO_SERVER_PORT=1442
+    networks:
+      - cardano-network
+    restart: unless-stopped
+
+volumes:
+  cardano-node-db:
+  cardano-node-socket:
+  kupo-db:
+
+networks:
+  cardano-network:
+    driver: bridge
+
