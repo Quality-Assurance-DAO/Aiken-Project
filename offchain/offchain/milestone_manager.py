@@ -248,3 +248,268 @@ class MilestoneManager:
         
         return milestone_data
 
+    def save_contract_state_cache(
+        self, contract_address: str, contract_state: DistributionContractState
+    ) -> Path:
+        """Save contract state to cache directory."""
+        # Use contract address as filename (sanitized)
+        safe_address = contract_address.replace("/", "_").replace(":", "_")
+        cache_file = self.cache_directory / f"{safe_address}.json"
+        
+        cache_data = {
+            "contract_address": contract_state.contract_address,
+            "utxo_tx_hash": contract_state.utxo_tx_hash,
+            "utxo_index": contract_state.utxo_index,
+            "datum": contract_state.datum,
+            "total_token_amount": contract_state.total_token_amount,
+            "token_policy_id": contract_state.token_policy_id,
+            "beneficiary_allocations": [
+                {
+                    "beneficiary_address": alloc.beneficiary_address,
+                    "token_amount": alloc.token_amount,
+                    "milestone_identifier": alloc.milestone_identifier,
+                    "vesting_timestamp": alloc.vesting_timestamp,
+                    "claimed": alloc.claimed,
+                }
+                for alloc in contract_state.beneficiary_allocations
+            ],
+            "oracle_addresses": contract_state.oracle_addresses,
+            "quorum_threshold": contract_state.quorum_threshold,
+            "total_oracles": contract_state.total_oracles,
+            "remaining_token_amount": contract_state.remaining_token_amount,
+            "cached_at": int(__import__("time").time()),
+        }
+        
+        with open(cache_file, "w") as f:
+            json.dump(cache_data, f, indent=2)
+        
+        return cache_file
+
+    def load_contract_state_cache(
+        self, contract_address: str
+    ) -> Optional[DistributionContractState]:
+        """Load contract state from cache directory."""
+        safe_address = contract_address.replace("/", "_").replace(":", "_")
+        cache_file = self.cache_directory / f"{safe_address}.json"
+        
+        if not cache_file.exists():
+            return None
+        
+        try:
+            with open(cache_file, "r") as f:
+                cache_data = json.load(f)
+            
+            # Reconstruct DistributionContractState
+            from offchain.models import BeneficiaryAllocationState
+            
+            beneficiary_allocations = [
+                BeneficiaryAllocationState(**alloc)
+                for alloc in cache_data["beneficiary_allocations"]
+            ]
+            
+            return DistributionContractState(
+                contract_address=cache_data["contract_address"],
+                utxo_tx_hash=cache_data["utxo_tx_hash"],
+                utxo_index=cache_data["utxo_index"],
+                datum=cache_data["datum"],
+                total_token_amount=cache_data["total_token_amount"],
+                token_policy_id=cache_data["token_policy_id"],
+                beneficiary_allocations=beneficiary_allocations,
+                oracle_addresses=cache_data["oracle_addresses"],
+                quorum_threshold=cache_data["quorum_threshold"],
+                total_oracles=cache_data["total_oracles"],
+                remaining_token_amount=cache_data["remaining_token_amount"],
+            )
+        except (json.JSONDecodeError, KeyError, Exception):
+            # Cache corrupted - return None to trigger refresh
+            return None
+
+    def is_cache_stale(
+        self, contract_address: str, max_age_seconds: int = 300
+    ) -> bool:
+        """Check if cached contract state is stale."""
+        safe_address = contract_address.replace("/", "_").replace(":", "_")
+        cache_file = self.cache_directory / f"{safe_address}.json"
+        
+        if not cache_file.exists():
+            return True
+        
+        # If max_age_seconds is 0, always consider cache stale (disables caching)
+        if max_age_seconds == 0:
+            return True
+        
+        try:
+            with open(cache_file, "r") as f:
+                cache_data = json.load(f)
+            
+            cached_at = cache_data.get("cached_at", 0)
+            import time
+            age = int(time.time()) - cached_at
+            
+            return age > max_age_seconds
+        except Exception:
+            return True
+
+    def parse_contract_state_from_utxo(
+        self, utxo: Dict[str, Any], contract_address: str
+    ) -> Optional[DistributionContractState]:
+        """Parse DistributionContractState from Kupo UTxO response."""
+        try:
+            # Extract datum
+            datum = utxo.get("datum")
+            if not datum:
+                return None
+            
+            # Handle different datum formats
+            if isinstance(datum, dict):
+                parsed_datum = datum
+            elif isinstance(datum, str):
+                # If it's a hex string, we might need to decode it
+                # For now, assume it's already parsed or wrap it
+                parsed_datum = {"cbor": datum}
+            else:
+                return None
+            
+            # Extract UTxO information
+            utxo_tx_hash = utxo.get("transaction_id") or utxo.get("tx_hash", "")
+            utxo_index = utxo.get("output_index", 0)
+            
+            # Parse datum structure (assuming it matches our datum format)
+            token_policy_id = parsed_datum.get("token_policy_id", "")
+            beneficiary_allocations_data = parsed_datum.get("beneficiary_allocations", [])
+            oracle_addresses = parsed_datum.get("oracle_addresses", [])
+            quorum_threshold = parsed_datum.get("quorum_threshold", 0)
+            total_oracles = parsed_datum.get("total_oracles", len(oracle_addresses))
+            
+            # Convert beneficiary allocations
+            from offchain.models import BeneficiaryAllocationState
+            
+            beneficiary_allocations = []
+            total_token_amount = 0
+            
+            for alloc_data in beneficiary_allocations_data:
+                alloc = BeneficiaryAllocationState(
+                    beneficiary_address=alloc_data.get("beneficiary_address", ""),
+                    token_amount=alloc_data.get("token_amount", 0),
+                    milestone_identifier=alloc_data.get("milestone_identifier", ""),
+                    vesting_timestamp=alloc_data.get("vesting_timestamp", 0),
+                    claimed=alloc_data.get("claimed", False),
+                )
+                beneficiary_allocations.append(alloc)
+                total_token_amount += alloc.token_amount
+            
+            # Calculate remaining token amount (unclaimed tokens)
+            remaining_token_amount = sum(
+                alloc.token_amount
+                for alloc in beneficiary_allocations
+                if not alloc.claimed
+            )
+            
+            return DistributionContractState(
+                contract_address=contract_address,
+                utxo_tx_hash=utxo_tx_hash,
+                utxo_index=utxo_index,
+                datum=parsed_datum,
+                total_token_amount=total_token_amount,
+                token_policy_id=token_policy_id,
+                beneficiary_allocations=beneficiary_allocations,
+                oracle_addresses=oracle_addresses,
+                quorum_threshold=quorum_threshold,
+                total_oracles=total_oracles,
+                remaining_token_amount=remaining_token_amount,
+            )
+        except Exception as e:
+            # Failed to parse - return None
+            return None
+
+    def aggregate_milestone_status(
+        self,
+        contract_state: DistributionContractState,
+        milestone_identifier: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Aggregate milestone status combining contract state and local milestone data."""
+        import time
+        
+        result = {
+            "contract_address": contract_state.contract_address,
+            "milestones": {},
+        }
+        
+        # Get all unique milestone identifiers from contract
+        milestone_ids = set(
+            alloc.milestone_identifier
+            for alloc in contract_state.beneficiary_allocations
+        )
+        
+        # If specific milestone requested, filter to that one
+        if milestone_identifier:
+            if milestone_identifier not in milestone_ids:
+                result["error"] = f"Milestone {milestone_identifier} not found in contract"
+                return result
+            milestone_ids = {milestone_identifier}
+        
+        current_time = int(time.time())
+        
+        # Aggregate status for each milestone
+        for mid in milestone_ids:
+            # Load local milestone completion data
+            local_data = self.load_milestone_completion_data(mid)
+            
+            # Get allocations for this milestone
+            milestone_allocations = [
+                alloc
+                for alloc in contract_state.beneficiary_allocations
+                if alloc.milestone_identifier == mid
+            ]
+            
+            # Calculate totals
+            total_amount = sum(alloc.token_amount for alloc in milestone_allocations)
+            claimed_amount = sum(
+                alloc.token_amount
+                for alloc in milestone_allocations
+                if alloc.claimed
+            )
+            unclaimed_amount = total_amount - claimed_amount
+            
+            # Check vesting status
+            vesting_passed = all(
+                alloc.vesting_timestamp <= current_time
+                for alloc in milestone_allocations
+            )
+            earliest_vesting = min(
+                alloc.vesting_timestamp for alloc in milestone_allocations
+            )
+            
+            milestone_status = {
+                "milestone_identifier": mid,
+                "total_token_amount": total_amount,
+                "claimed_amount": claimed_amount,
+                "unclaimed_amount": unclaimed_amount,
+                "allocations_count": len(milestone_allocations),
+                "claimed_count": sum(1 for alloc in milestone_allocations if alloc.claimed),
+                "vesting_passed": vesting_passed,
+                "earliest_vesting_timestamp": earliest_vesting,
+            }
+            
+            # Add local milestone completion data if available
+            if local_data:
+                milestone_status["quorum_status"] = local_data.quorum_status
+                milestone_status["quorum_met"] = local_data.quorum_met
+                milestone_status["signature_count"] = local_data.signature_count
+                milestone_status["quorum_threshold"] = local_data.quorum_threshold
+                milestone_status["verification_timestamp"] = local_data.verification_timestamp
+                milestone_status["claimable"] = (
+                    local_data.quorum_met and vesting_passed and unclaimed_amount > 0
+                )
+            else:
+                milestone_status["quorum_status"] = "unknown"
+                milestone_status["quorum_met"] = False
+                milestone_status["signature_count"] = 0
+                milestone_status["quorum_threshold"] = contract_state.quorum_threshold
+                milestone_status["verification_timestamp"] = None
+                milestone_status["claimable"] = False
+            
+            result["milestones"][mid] = milestone_status
+        
+        return result
+

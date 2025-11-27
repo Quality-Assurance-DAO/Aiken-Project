@@ -11,7 +11,7 @@ async def test_ogmios_client_connectivity_success():
     """Test successful Ogmios connectivity check."""
     client = OgmiosClient("ws://localhost:1337")
     
-    with patch("websockets.connect") as mock_connect:
+    with patch("offchain.ogmios_client.websockets.connect") as mock_connect:
         mock_ws = AsyncMock()
         mock_ws.send = AsyncMock()
         mock_ws.recv = AsyncMock(return_value=json.dumps({
@@ -20,7 +20,14 @@ async def test_ogmios_client_connectivity_success():
             "result": {"version": "5.6.0"}
         }))
         mock_ws.close = AsyncMock()
-        mock_connect.return_value.__aenter__.return_value = mock_ws
+        
+        # websockets.connect() returns an async context manager
+        # When awaited directly, it should resolve to the websocket
+        # So we make the mock return a coroutine that resolves to mock_ws
+        async def connect_coro(*args, **kwargs):
+            return mock_ws
+        
+        mock_connect.return_value = connect_coro()
         
         result = await client.check_connectivity()
         
@@ -33,7 +40,7 @@ async def test_ogmios_client_connectivity_failure():
     """Test Ogmios connectivity check failure."""
     client = OgmiosClient("ws://localhost:1337")
     
-    with patch("websockets.connect", side_effect=ConnectionRefusedError()):
+    with patch("offchain.ogmios_client.websockets.connect", side_effect=ConnectionRefusedError()):
         result = await client.check_connectivity()
         
         assert result["connected"] is False

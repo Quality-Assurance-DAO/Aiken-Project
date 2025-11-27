@@ -294,10 +294,158 @@ def commit_milestone(
 def check_status(
     contract_address: str = typer.Option(..., "--contract-address", help="Distribution contract address"),
     milestone_identifier: str = typer.Option(None, "--milestone-identifier", help="Specific milestone identifier (optional)"),
+    kupo_url: str = typer.Option("http://localhost:1442", "--kupo-url", help="Kupo HTTP URL"),
+    force_refresh: bool = typer.Option(False, "--force-refresh", help="Force refresh from chain, ignoring cache"),
+    output_format: str = typer.Option("json", "--output", "-o", help="Output format (json/text)"),
 ):
-    """Check milestone completion status."""
-    # TODO: Implement status checking
-    typer.echo("Status checking not yet implemented")
+    """Check milestone completion status using hybrid approach (local cache + on-chain verification)."""
+    import json
+    from pathlib import Path
+    from offchain.milestone_manager import MilestoneManager
+    from offchain.kupo_client import KupoClient
+    from offchain.config import DataStorageConfiguration
+    
+    try:
+        # Initialize clients
+        storage_config = DataStorageConfiguration()
+        manager = MilestoneManager(storage_config.data_directory)
+        kupo_client = KupoClient(kupo_url)
+        
+        # Try to load from cache first (unless force refresh)
+        contract_state = None
+        cache_hit = False
+        
+        if not force_refresh:
+            contract_state = manager.load_contract_state_cache(contract_address)
+            if contract_state:
+                cache_hit = True
+                # Check if cache is stale
+                if manager.is_cache_stale(contract_address):
+                    cache_hit = False
+                    contract_state = None
+        
+        # If no cache or stale, query from chain
+        if not contract_state:
+            try:
+                # Query UTxOs from Kupo
+                utxos = kupo_client.query_utxos_by_address(contract_address)
+                
+                if not utxos:
+                    error_msg = f"No UTxOs found at contract address: {contract_address}"
+                    if output_format == "json":
+                        typer.echo(json.dumps({"error": error_msg}, indent=2))
+                    else:
+                        typer.echo(f"Error: {error_msg}", err=True)
+                    raise typer.Exit(code=1)
+                
+                # Use first UTxO (should be only one for contract)
+                utxo = utxos[0]
+                
+                # Parse contract state from UTxO
+                contract_state = manager.parse_contract_state_from_utxo(utxo, contract_address)
+                
+                if not contract_state:
+                    error_msg = f"Failed to parse contract state from UTxO at address: {contract_address}"
+                    if output_format == "json":
+                        typer.echo(json.dumps({"error": error_msg}, indent=2))
+                    else:
+                        typer.echo(f"Error: {error_msg}", err=True)
+                    raise typer.Exit(code=1)
+                
+                # Save to cache
+                manager.save_contract_state_cache(contract_address, contract_state)
+                
+            except ConnectionError as e:
+                # Kupo unavailable - try to use cache if available
+                if cache_hit:
+                    typer.echo(
+                        f"Warning: Kupo unavailable ({e}), using cached data",
+                        err=True
+                    )
+                    contract_state = manager.load_contract_state_cache(contract_address)
+                    if not contract_state:
+                        error_msg = f"Kupo unavailable and no cache available: {e}"
+                        if output_format == "json":
+                            typer.echo(json.dumps({"error": error_msg}, indent=2))
+                        else:
+                            typer.echo(f"Error: {error_msg}", err=True)
+                        raise typer.Exit(code=1)
+                else:
+                    error_msg = f"Kupo unavailable and no cache available: {e}"
+                    if output_format == "json":
+                        typer.echo(json.dumps({"error": error_msg}, indent=2))
+                    else:
+                        typer.echo(f"Error: {error_msg}", err=True)
+                    raise typer.Exit(code=1)
+            except Exception as e:
+                # Auto-recovery: try to rebuild cache from chain
+                typer.echo(
+                    f"Warning: Error querying chain ({e}), attempting recovery",
+                    err=True
+                )
+                # If we have any cached data, try to use it
+                contract_state = manager.load_contract_state_cache(contract_address)
+                if not contract_state:
+                    error_msg = f"Failed to query contract state: {e}"
+                    if output_format == "json":
+                        typer.echo(json.dumps({"error": error_msg}, indent=2))
+                    else:
+                        typer.echo(f"Error: {error_msg}", err=True)
+                    raise typer.Exit(code=1)
+        
+        # Aggregate milestone status
+        status_result = manager.aggregate_milestone_status(
+            contract_state, milestone_identifier
+        )
+        
+        # Add cache info
+        status_result["cache_info"] = {
+            "used_cache": cache_hit,
+            "contract_address": contract_address,
+        }
+        
+        # Output result
+        if output_format == "json":
+            typer.echo(json.dumps(status_result, indent=2))
+        else:
+            typer.echo(f"Milestone Status for Contract: {contract_address}")
+            typer.echo(f"Cache: {'Used' if cache_hit else 'Refreshed from chain'}")
+            typer.echo("")
+            
+            if "error" in status_result:
+                typer.echo(f"Error: {status_result['error']}", err=True)
+                raise typer.Exit(code=1)
+            
+            milestones = status_result.get("milestones", {})
+            if not milestones:
+                typer.echo("No milestones found in contract")
+                raise typer.Exit(code=1)
+            
+            for mid, status in milestones.items():
+                typer.echo(f"Milestone: {mid}")
+                typer.echo(f"  Total Tokens: {status['total_token_amount']}")
+                typer.echo(f"  Claimed: {status['claimed_amount']}")
+                typer.echo(f"  Unclaimed: {status['unclaimed_amount']}")
+                typer.echo(f"  Allocations: {status['claimed_count']}/{status['allocations_count']} claimed")
+                typer.echo(f"  Quorum Status: {status['quorum_status']}")
+                typer.echo(f"  Signatures: {status['signature_count']}/{status['quorum_threshold']}")
+                typer.echo(f"  Vesting Passed: {'Yes' if status['vesting_passed'] else 'No'}")
+                typer.echo(f"  Claimable: {'Yes' if status.get('claimable', False) else 'No'}")
+                if status.get("verification_timestamp"):
+                    typer.echo(f"  Verified At: {status['verification_timestamp']}")
+                typer.echo("")
+        
+        kupo_client.close()
+        
+    except typer.Exit:
+        raise
+    except Exception as e:
+        error_result = {"error": str(e)}
+        if output_format == "json":
+            typer.echo(json.dumps(error_result, indent=2))
+        else:
+            typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1)
 
 
 @app.command()

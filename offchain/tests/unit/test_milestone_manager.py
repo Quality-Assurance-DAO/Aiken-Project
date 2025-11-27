@@ -452,3 +452,265 @@ def test_commit_milestone_completion_data_invalid_signature_format():
         assert len(errors) > 0
         assert any("address" in err.lower() for err in errors)
 
+
+def test_contract_state_cache_save_and_load():
+    """Test saving and loading contract state cache."""
+    with TemporaryDirectory() as tmpdir:
+        manager = MilestoneManager(Path(tmpdir))
+        
+        from offchain.models import DistributionContractState, BeneficiaryAllocationState
+        
+        contract_state = DistributionContractState(
+            contract_address="addr_test1q...",
+            utxo_tx_hash="abc123",
+            utxo_index=0,
+            datum={"token_policy_id": "abc"},
+            total_token_amount=1000000,
+            token_policy_id="abc",
+            beneficiary_allocations=[
+                BeneficiaryAllocationState(
+                    beneficiary_address="addr_test1q...ben1",
+                    token_amount=500000,
+                    milestone_identifier="milestone-001",
+                    vesting_timestamp=1735689600,
+                    claimed=False,
+                )
+            ],
+            oracle_addresses=["addr_test1q...oracle1"],
+            quorum_threshold=1,
+            total_oracles=1,
+            remaining_token_amount=1000000,
+        )
+        
+        # Save cache
+        cache_path = manager.save_contract_state_cache("addr_test1q...", contract_state)
+        assert cache_path.exists()
+        
+        # Load cache
+        loaded_state = manager.load_contract_state_cache("addr_test1q...")
+        assert loaded_state is not None
+        assert loaded_state.contract_address == "addr_test1q..."
+        assert loaded_state.utxo_tx_hash == "abc123"
+        assert len(loaded_state.beneficiary_allocations) == 1
+
+
+def test_contract_state_cache_stale_check():
+    """Test cache staleness checking."""
+    with TemporaryDirectory() as tmpdir:
+        manager = MilestoneManager(Path(tmpdir))
+        
+        from offchain.models import DistributionContractState, BeneficiaryAllocationState
+        
+        contract_state = DistributionContractState(
+            contract_address="addr_test1q...",
+            utxo_tx_hash="abc123",
+            utxo_index=0,
+            datum={},
+            total_token_amount=0,
+            token_policy_id="abc",
+            beneficiary_allocations=[],
+            oracle_addresses=[],
+            quorum_threshold=1,
+            total_oracles=1,
+            remaining_token_amount=0,
+        )
+        
+        # Save cache
+        manager.save_contract_state_cache("addr_test1q...", contract_state)
+        
+        # Should not be stale immediately
+        assert manager.is_cache_stale("addr_test1q...", max_age_seconds=300) is False
+        
+        # Should be stale with very short max age
+        assert manager.is_cache_stale("addr_test1q...", max_age_seconds=0) is True
+
+
+def test_parse_contract_state_from_utxo():
+    """Test parsing contract state from UTxO response."""
+    with TemporaryDirectory() as tmpdir:
+        manager = MilestoneManager(Path(tmpdir))
+        
+        utxo = {
+            "transaction_id": "tx123",
+            "output_index": 0,
+            "datum": {
+                "token_policy_id": "abc123",
+                "beneficiary_allocations": [
+                    {
+                        "beneficiary_address": "addr_test1q...ben1",
+                        "token_amount": 1000000,
+                        "milestone_identifier": "milestone-001",
+                        "vesting_timestamp": 1735689600,
+                        "claimed": False,
+                    }
+                ],
+                "oracle_addresses": ["addr_test1q...oracle1"],
+                "quorum_threshold": 1,
+                "total_oracles": 1,
+            },
+        }
+        
+        contract_state = manager.parse_contract_state_from_utxo(utxo, "addr_test1q...")
+        
+        assert contract_state is not None
+        assert contract_state.contract_address == "addr_test1q..."
+        assert contract_state.utxo_tx_hash == "tx123"
+        assert contract_state.token_policy_id == "abc123"
+        assert len(contract_state.beneficiary_allocations) == 1
+        assert contract_state.beneficiary_allocations[0].milestone_identifier == "milestone-001"
+
+
+def test_milestone_status_aggregation():
+    """Test milestone status aggregation combining contract state and local data."""
+    with TemporaryDirectory() as tmpdir:
+        manager = MilestoneManager(Path(tmpdir))
+        
+        from offchain.models import DistributionContractState, BeneficiaryAllocationState
+        
+        # Create contract state
+        contract_state = DistributionContractState(
+            contract_address="addr_test1q...",
+            utxo_tx_hash="tx123",
+            utxo_index=0,
+            datum={},
+            total_token_amount=2000000,
+            token_policy_id="abc",
+            beneficiary_allocations=[
+                BeneficiaryAllocationState(
+                    beneficiary_address="addr_test1q...ben1",
+                    token_amount=1000000,
+                    milestone_identifier="milestone-001",
+                    vesting_timestamp=1735689600,  # Past timestamp
+                    claimed=False,
+                ),
+                BeneficiaryAllocationState(
+                    beneficiary_address="addr_test1q...ben2",
+                    token_amount=1000000,
+                    milestone_identifier="milestone-001",
+                    vesting_timestamp=1735689600,
+                    claimed=True,
+                ),
+            ],
+            oracle_addresses=["addr_test1q...oracle1"],
+            quorum_threshold=1,
+            total_oracles=1,
+            remaining_token_amount=1000000,
+        )
+        
+        # Create local milestone completion data
+        milestone_data = MilestoneCompletionData(
+            milestone_identifier="milestone-001",
+            quorum_threshold=1,
+            total_oracles=1,
+        )
+        milestone_data.oracle_signatures.append(
+            OracleSignatureData(
+                oracle_address="addr_test1q...oracle1",
+                signature="sig1",
+                signed_data="data1",
+                signature_timestamp=1735689600,
+            )
+        )
+        milestone_data.quorum_status = "met"
+        manager.save_milestone_completion_data(milestone_data)
+        
+        # Aggregate status
+        status = manager.aggregate_milestone_status(contract_state, "milestone-001")
+        
+        assert "milestones" in status
+        assert "milestone-001" in status["milestones"]
+        
+        milestone_status = status["milestones"]["milestone-001"]
+        assert milestone_status["total_token_amount"] == 2000000
+        assert milestone_status["claimed_amount"] == 1000000
+        assert milestone_status["unclaimed_amount"] == 1000000
+        assert milestone_status["quorum_met"] is True
+        assert milestone_status["signature_count"] == 1
+        assert milestone_status["vesting_passed"] is True
+        assert milestone_status["claimable"] is True
+
+
+def test_milestone_status_aggregation_no_local_data():
+    """Test milestone status aggregation without local milestone data."""
+    with TemporaryDirectory() as tmpdir:
+        manager = MilestoneManager(Path(tmpdir))
+        
+        from offchain.models import DistributionContractState, BeneficiaryAllocationState
+        
+        contract_state = DistributionContractState(
+            contract_address="addr_test1q...",
+            utxo_tx_hash="tx123",
+            utxo_index=0,
+            datum={},
+            total_token_amount=1000000,
+            token_policy_id="abc",
+            beneficiary_allocations=[
+                BeneficiaryAllocationState(
+                    beneficiary_address="addr_test1q...ben1",
+                    token_amount=1000000,
+                    milestone_identifier="milestone-002",
+                    vesting_timestamp=1735689600,
+                    claimed=False,
+                )
+            ],
+            oracle_addresses=["addr_test1q...oracle1"],
+            quorum_threshold=1,
+            total_oracles=1,
+            remaining_token_amount=1000000,
+        )
+        
+        # Aggregate without local data
+        status = manager.aggregate_milestone_status(contract_state, "milestone-002")
+        
+        assert "milestones" in status
+        milestone_status = status["milestones"]["milestone-002"]
+        assert milestone_status["quorum_status"] == "unknown"
+        assert milestone_status["quorum_met"] is False
+        assert milestone_status["signature_count"] == 0
+        assert milestone_status["claimable"] is False
+
+
+def test_milestone_status_aggregation_multiple_milestones():
+    """Test milestone status aggregation with multiple milestones."""
+    with TemporaryDirectory() as tmpdir:
+        manager = MilestoneManager(Path(tmpdir))
+        
+        from offchain.models import DistributionContractState, BeneficiaryAllocationState
+        
+        contract_state = DistributionContractState(
+            contract_address="addr_test1q...",
+            utxo_tx_hash="tx123",
+            utxo_index=0,
+            datum={},
+            total_token_amount=2000000,
+            token_policy_id="abc",
+            beneficiary_allocations=[
+                BeneficiaryAllocationState(
+                    beneficiary_address="addr_test1q...ben1",
+                    token_amount=1000000,
+                    milestone_identifier="milestone-001",
+                    vesting_timestamp=1735689600,
+                    claimed=False,
+                ),
+                BeneficiaryAllocationState(
+                    beneficiary_address="addr_test1q...ben2",
+                    token_amount=1000000,
+                    milestone_identifier="milestone-002",
+                    vesting_timestamp=1735689600,
+                    claimed=False,
+                ),
+            ],
+            oracle_addresses=["addr_test1q...oracle1"],
+            quorum_threshold=1,
+            total_oracles=1,
+            remaining_token_amount=2000000,
+        )
+        
+        # Aggregate for all milestones
+        status = manager.aggregate_milestone_status(contract_state)
+        
+        assert "milestones" in status
+        assert "milestone-001" in status["milestones"]
+        assert "milestone-002" in status["milestones"]
+        assert len(status["milestones"]) == 2
+
