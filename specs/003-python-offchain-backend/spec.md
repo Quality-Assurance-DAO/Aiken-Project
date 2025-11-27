@@ -5,6 +5,16 @@
 **Status**: Draft  
 **Input**: User description: "Using the existing Aiken-Project repository (on-chain validators in validators/, plus cardano-node/, scripts/, share/, specs/ infrastructure components), scaffold an MVP of the milestone-based token distribution system on Cardano with a full off-chain backend in Python — no external API like Blockfrost, but direct node access via a local cardano-node + Ogmios (WebSocket JSON-RPC) + Kupo (UTxO indexer). Organise the project so that new code lives in clearly separated folders: offchain/ for Python modules (e.g. ogmios_client.py, kupo_client.py, wallet.py, tx_builder.py, milestone_manager.py, config.py), infra/ for docker-compose or orchestration definitions for cardano-node, Ogmios, and Kupo, and leave contracts/ or keep validators/ for the existing Aiken smart contracts (optionally move compiled outputs to a contracts/compiled/ sub-folder). Add a CLI entry point (e.g. cli.py) using a Python CLI framework (e.g. typer or argparse) exposing commands for: initializing the environment, registering a new milestone-schedule (datum creation), committing/updating milestone data, checking milestone completion state (by scanning UTxOs via indexer), calculating token distribution amounts, and submitting a release transaction with appropriate datum/redeemer to release tokens to a beneficiary. In off-chain code, implement modules that (a) load compiled Aiken validator (from plutus.json or compiled artifact), (b) query UTxOs & datum states via Kupo, (c) query chain & protocol parameters via Ogmios, (d) build transactions via a library like pycardano, including script-UTxO, datum/redeemer, collateral, fees, signing, and (e) submit transactions back to the chain via Ogmios. Structure the milestone-distribution logic in a dedicated module — separate from "network / chain interface" and "contract loading / serialization" — so that business logic (milestones, token release rules, schedule, recipients) remains modular and testable. This MVP should reuse existing on-chain code and infrastructure configs to minimize duplication, while layering a clean, maintainable off-chain backend, suitable as a base for future web-app UI."
 
+## Clarifications
+
+### Session 2025-01-27
+
+- Q: How should milestone completion data be persisted (in-memory, local file system, on-chain only, or hybrid)? → A: Local file system (JSON files or SQLite database)
+- Q: Should the Python backend cryptographically validate oracle signatures or only validate format? → A: Format validation only (on-chain validator performs cryptographic verification)
+- Q: Where should local milestone completion data files be stored? → A: Configurable directory (default: project data subdirectory)
+- Q: Should milestone completion state queries use local storage, on-chain data, or both? → A: Hybrid (check local cache first, verify/update from chain if needed)
+- Q: How should the system handle corrupted or unreadable local milestone data files? → A: Auto-recover from chain (with warning message)
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Administrator Initializes Off-Chain Environment (Priority: P1)
@@ -51,10 +61,10 @@ An administrator records milestone completion information including oracle verif
 
 **Acceptance Scenarios**:
 
-1. **Given** an administrator wants to record that milestone "milestone-001" is complete, **When** they provide milestone identifier and oracle verification signatures, **Then** the system stores the milestone completion data and marks it as verified
-2. **Given** milestone completion data exists for a milestone, **When** the administrator updates it with additional oracle signatures, **Then** the system updates the stored data with the new information
-3. **Given** milestone completion data is stored, **When** the administrator queries the milestone state, **Then** the system returns the current verification status and oracle signature count
-4. **Given** an administrator attempts to commit milestone data, **When** they provide an invalid milestone identifier or malformed oracle signatures, **Then** the system rejects the input and reports validation errors
+1. **Given** an administrator wants to record that milestone "milestone-001" is complete, **When** they provide milestone identifier and oracle verification signatures, **Then** the system stores the milestone completion data to local file system and marks it as verified
+2. **Given** milestone completion data exists for a milestone, **When** the administrator updates it with additional oracle signatures, **Then** the system updates the locally stored data file with the new information
+3. **Given** milestone completion data is stored locally, **When** the administrator queries the milestone state, **Then** the system returns the current verification status and oracle signature count from local storage
+4. **Given** an administrator attempts to commit milestone data, **When** they provide an invalid milestone identifier or malformed oracle signatures (invalid format/structure), **Then** the system rejects the input and reports validation errors (format validation only; cryptographic verification happens on-chain)
 
 ---
 
@@ -68,10 +78,11 @@ A user (administrator or beneficiary) queries the system to determine whether a 
 
 **Acceptance Scenarios**:
 
-1. **Given** a distribution contract exists on-chain with milestone allocations, **When** a user queries milestone completion state, **Then** the system scans UTxOs and returns the current status of each milestone (verified/unverified)
-2. **Given** a milestone has been verified by sufficient oracles, **When** a user checks the milestone state, **Then** the system reports that the milestone is complete and tokens are claimable
-3. **Given** a milestone has not yet met quorum requirements, **When** a user checks the milestone state, **Then** the system reports how many oracle signatures are present and how many are required
+1. **Given** a distribution contract exists on-chain with milestone allocations, **When** a user queries milestone completion state, **Then** the system checks local cache first and verifies/updates from on-chain UTxOs, returning the current status of each milestone (verified/unverified)
+2. **Given** a milestone has been verified by sufficient oracles, **When** a user checks the milestone state, **Then** the system reports that the milestone is complete and tokens are claimable (using local cache if available, verifying against chain)
+3. **Given** a milestone has not yet met quorum requirements, **When** a user checks the milestone state, **Then** the system reports how many oracle signatures are present and how many are required (from local cache or chain query)
 4. **Given** a user queries milestone state, **When** the distribution contract UTxO cannot be found on-chain, **Then** the system reports that the contract address is invalid or the contract has not been deployed
+5. **Given** local milestone data exists but may be stale, **When** a user queries milestone state, **Then** the system verifies local data against on-chain state and updates local cache if discrepancies are found
 
 ---
 
@@ -122,6 +133,7 @@ A beneficiary initiates a transaction to claim their allocated tokens from a dis
 - How does the system handle protocol parameter queries when Ogmios is unavailable? → System reports service unavailability and cannot proceed with transaction building
 - What happens when transaction building fails due to execution budget limits? → System reports budget calculation and identifies which operations exceed limits
 - How does the system handle wallet signing when the signing key is missing or invalid? → System validates key file existence and format before attempting to sign
+- What happens when local milestone data files are corrupted or unreadable? → System automatically recovers by querying on-chain state, rebuilding local cache, and displays warning message to user
 
 ## Requirements *(mandatory)*
 
@@ -131,7 +143,10 @@ A beneficiary initiates a transaction to claim their allocated tokens from a dis
 - **FR-002**: System MUST provide a CLI command to register a new milestone schedule that creates a distribution contract datum with beneficiary allocations
 - **FR-003**: System MUST validate milestone schedule inputs including beneficiary addresses, token amounts, milestone identifiers, and vesting timestamps before creating datum
 - **FR-004**: System MUST provide a CLI command to commit or update milestone completion data including oracle verification signatures
-- **FR-005**: System MUST provide a CLI command to check milestone completion state by querying on-chain UTxOs and datum states
+- **FR-025**: System MUST persist milestone completion data to local file system (JSON files or SQLite database) to enable efficient querying and incremental updates
+- **FR-027**: System MUST store milestone completion data in a configurable directory, with default location in a project data subdirectory (e.g., `offchain/data/` or `data/`)
+- **FR-028**: System MUST automatically recover from corrupted or unreadable local milestone data files by querying on-chain state and rebuilding local cache, with warning message to user
+- **FR-005**: System MUST provide a CLI command to check milestone completion state using hybrid approach (check local cache first, verify/update from on-chain UTxOs and datum states if needed)
 - **FR-006**: System MUST query UTxOs from Kupo indexer to determine current contract state
 - **FR-007**: System MUST query chain and protocol parameters from Ogmios to support transaction building
 - **FR-008**: System MUST provide a CLI command to calculate token distribution amounts based on milestone status, vesting timestamps, and allocation rules
@@ -144,6 +159,7 @@ A beneficiary initiates a transaction to claim their allocated tokens from a dis
 - **FR-015**: System MUST separate contract loading and serialization logic from business logic
 - **FR-016**: System MUST validate transaction inputs (beneficiary address, milestone identifier, token amounts) before building transactions
 - **FR-017**: System MUST detect and report when milestone verification does not meet quorum requirements
+- **FR-026**: System MUST validate oracle signature format (structure, field presence, data types) but MUST NOT perform cryptographic signature verification (on-chain validator handles cryptographic validation)
 - **FR-018**: System MUST detect and report when vesting timestamps have not been met
 - **FR-019**: System MUST handle transaction fee calculations and detect insufficient wallet balances
 - **FR-020**: System MUST verify transaction submission status and report success or failure
@@ -156,13 +172,15 @@ A beneficiary initiates a transaction to claim their allocated tokens from a dis
 
 - **Milestone Schedule**: A data structure defining token distribution parameters including beneficiary allocations, vesting timestamps, milestone identifiers, and contract metadata. Used to create distribution contract datums.
 
-- **Milestone Completion Data**: Information recording that a milestone has been verified, including milestone identifier, oracle signatures, verification timestamp, and quorum status. Used to determine when tokens become claimable.
+- **Milestone Completion Data**: Information recording that a milestone has been verified, including milestone identifier, oracle signatures, verification timestamp, and quorum status. Stored locally in configurable directory (default: project data subdirectory) as JSON files or SQLite database to enable efficient querying and incremental updates. Oracle signatures are validated for format/structure off-chain; cryptographic verification occurs on-chain via the validator. Used to determine when tokens become claimable.
 
 - **Distribution Contract State**: Current on-chain state of a distribution contract including UTxO information, datum content, claimed allocations, and remaining token balances. Retrieved by querying the blockchain via Kupo.
 
 - **Release Transaction**: A blockchain transaction that claims tokens from a distribution contract, including script UTxO reference, beneficiary address, milestone verification data, datum, redeemer, and transaction metadata.
 
 - **Network Configuration**: Settings that define which Cardano network to connect to (testnet/mainnet), service endpoints (Ogmios, Kupo, cardano-node), and network-specific parameters.
+
+- **Data Storage Configuration**: Settings that define where milestone completion data and other local files are stored, including configurable data directory path (defaults to project data subdirectory).
 
 ## Success Criteria *(mandatory)*
 
@@ -171,7 +189,7 @@ A beneficiary initiates a transaction to claim their allocated tokens from a dis
 - **SC-001**: Administrators can successfully initialize the off-chain environment and establish connectivity to all required services (cardano-node, Ogmios, Kupo) within 30 seconds when services are running
 - **SC-002**: Administrators can create milestone schedules for up to 50 beneficiaries in a single operation, with datum generation completing within 5 seconds
 - **SC-003**: System correctly calculates token distribution amounts with 100% accuracy based on milestone verification status and vesting timestamps
-- **SC-004**: System successfully queries on-chain contract state and returns current milestone completion status within 10 seconds of the query request
+- **SC-004**: System successfully queries milestone completion status using hybrid approach (local cache + on-chain verification) and returns current status within 10 seconds of the query request
 - **SC-005**: Beneficiaries can submit release transactions that are successfully built, signed, and submitted to the blockchain within 2 minutes of initiating the command when all conditions are met
 - **SC-006**: System validates 100% of transaction inputs (addresses, amounts, milestone identifiers) before building transactions, preventing invalid submissions
 - **SC-007**: System detects and reports quorum requirement failures before transaction submission in 100% of cases where quorum is not met
