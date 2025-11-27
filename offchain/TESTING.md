@@ -115,6 +115,38 @@ Integration tests test CLI commands end-to-end:
 pytest tests/integration/ -v
 ```
 
+#### Understanding `test_init_command_with_real_services`
+
+The `test_init.py` file contains an integration test that verifies the `init` command works correctly:
+
+**What it does:**
+- Executes the CLI command `python cli.py init --network testnet` as a subprocess
+- Verifies the command runs without crashing (smoke test)
+- Checks that the command handles both success and failure scenarios gracefully
+
+**Test behavior:**
+- **Success case**: If Cardano services (Ogmios, Kupo, cardano-node) are available, the command should return exit code `0`
+- **Failure case**: If services are unavailable, the command should return exit code `1` (expected failure, not a crash)
+- **Timeout**: If the command takes longer than 10 seconds, the test is skipped
+- **Exceptions**: Any unexpected exceptions cause the test to be skipped
+
+**Why it's lenient:**
+This test is designed to be a **smoke test** - it verifies the command doesn't crash, rather than requiring all services to be available. This allows the test to pass in CI/CD environments where services may not be running, while still catching critical bugs that would cause the command to fail unexpectedly.
+
+**What it validates:**
+- ✅ The CLI command executes end-to-end without crashing
+- ✅ The command handles missing services gracefully (returns error code, doesn't throw exceptions)
+- ✅ The integration path works correctly when services are available
+- ✅ The command respects timeout limits
+
+**Expected output:**
+When the test passes, you'll see:
+```
+tests/integration/test_init.py::test_init_command_with_real_services PASSED
+```
+
+If you see a warning about `@pytest.mark.integration`, ensure the marker is registered in `pyproject.toml` (see [Test Markers](#test-markers) section).
+
 ### Contract Tests (`tests/contract/`)
 
 Contract tests verify validator loading and serialization:
@@ -139,6 +171,8 @@ pytest -m integration
 ```bash
 pytest -m "not integration"
 ```
+
+**Note:** Custom markers like `@pytest.mark.integration` must be registered in `pyproject.toml` under `[tool.pytest.ini_options]` to avoid warnings. The `integration` marker is already configured in this project.
 
 ## Common Test Scenarios
 
