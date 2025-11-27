@@ -1,0 +1,14 @@
+// Test entry point - imports all test modules to ensure they're discovered
+// This file ensures test modules are part of the compilation graph
+
+// Import test modules (they don't export anything, but importing them
+// ensures they're compiled and their tests are discovered)
+// Note: We import them even though they have no exports - this makes them
+// part of the compilation graph so their tests are discovered
+use contract/oracle_test
+use contract/simple_test  
+use test_simple
+// lib/validation is imported via contract/lib, but we ensure it's compiled
+// by importing it here as well (it has inline tests)
+use lib/validation
+

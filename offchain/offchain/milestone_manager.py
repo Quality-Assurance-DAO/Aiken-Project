@@ -176,3 +176,75 @@ class MilestoneManager:
             for sig in milestone_data.oracle_signatures
         )
 
+    def commit_milestone_completion_data(
+        self,
+        milestone_identifier: str,
+        oracle_signatures: List[OracleSignatureData],
+        quorum_threshold: Optional[int] = None,
+        total_oracles: Optional[int] = None,
+    ) -> MilestoneCompletionData:
+        """Commit milestone completion data with incremental signature addition."""
+        # Load existing milestone data if it exists
+        existing_data = self.load_milestone_completion_data(milestone_identifier)
+        
+        if existing_data:
+            milestone_data = existing_data
+        else:
+            # Create new milestone data
+            if quorum_threshold is None or total_oracles is None:
+                raise ValueError(
+                    "quorum_threshold and total_oracles are required when creating new milestone data"
+                )
+            milestone_data = MilestoneCompletionData(
+                milestone_identifier=milestone_identifier,
+                quorum_threshold=quorum_threshold,
+                total_oracles=total_oracles,
+            )
+        
+        # Validate and add each signature
+        added_count = 0
+        skipped_count = 0
+        validation_errors = []
+        
+        for sig in oracle_signatures:
+            # Validate signature format
+            sig_dict = sig.model_dump()
+            format_errors = self.validate_oracle_signature_format(sig_dict)
+            
+            if format_errors:
+                validation_errors.extend(
+                    [f"Signature from {sig.oracle_address}: {err}" for err in format_errors]
+                )
+                continue
+            
+            # Check for duplicates
+            if self.detect_duplicate_oracle_signature(milestone_data, sig.oracle_address):
+                skipped_count += 1
+                continue
+            
+            # Add signature
+            milestone_data.oracle_signatures.append(sig)
+            added_count += 1
+        
+        # Update quorum status
+        signature_count = milestone_data.signature_count
+        milestone_data.quorum_status = self.calculate_quorum_status(
+            signature_count, milestone_data.quorum_threshold
+        )
+        
+        # Update verification timestamp if quorum is met
+        if milestone_data.quorum_met and milestone_data.verification_timestamp is None:
+            import time
+            milestone_data.verification_timestamp = int(time.time())
+        
+        # Save updated milestone data
+        self.save_milestone_completion_data(milestone_data)
+        
+        # Raise error if there were validation errors
+        if validation_errors:
+            raise ValueError(
+                f"Invalid signature formats: {'; '.join(validation_errors)}"
+            )
+        
+        return milestone_data
+

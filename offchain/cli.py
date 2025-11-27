@@ -190,10 +190,104 @@ def commit_milestone(
     oracle_signatures: str = typer.Option(..., "--oracle-signatures", help="Path to signatures JSON file"),
     quorum_threshold: int = typer.Option(None, "--quorum-threshold", help="Quorum threshold (if not in existing data)"),
     total_oracles: int = typer.Option(None, "--total-oracles", help="Total authorized oracles (if not in existing data)"),
+    output_format: str = typer.Option("json", "--output", "-o", help="Output format (json/text)"),
 ):
     """Commit milestone completion data."""
-    # TODO: Implement milestone commitment
-    typer.echo("Milestone commitment not yet implemented")
+    import json
+    from pathlib import Path
+    from offchain.models import OracleSignatureData
+    from offchain.milestone_manager import MilestoneManager
+    from offchain.config import DataStorageConfiguration
+    
+    try:
+        # Load oracle signatures from file
+        signatures_path = Path(oracle_signatures)
+        if not signatures_path.exists():
+            typer.echo(f"Error: Signatures file not found: {oracle_signatures}", err=True)
+            raise typer.Exit(code=1)
+        
+        with open(signatures_path, "r") as f:
+            signatures_data = json.load(f)
+        
+        # Parse signatures - support both list and single signature
+        if isinstance(signatures_data, dict):
+            signatures_data = [signatures_data]
+        
+        signatures = []
+        for sig_data in signatures_data:
+            try:
+                signatures.append(OracleSignatureData(**sig_data))
+            except Exception as e:
+                typer.echo(f"Error: Invalid signature format: {e}", err=True)
+                raise typer.Exit(code=1)
+        
+        if not signatures:
+            typer.echo("Error: No valid signatures provided", err=True)
+            raise typer.Exit(code=1)
+        
+        # Initialize milestone manager
+        storage_config = DataStorageConfiguration()
+        manager = MilestoneManager(storage_config.data_directory)
+        
+        # Check if milestone data already exists
+        existing_data = manager.load_milestone_completion_data(milestone_identifier)
+        
+        # Use existing quorum_threshold and total_oracles if available
+        if existing_data:
+            if quorum_threshold is None:
+                quorum_threshold = existing_data.quorum_threshold
+            if total_oracles is None:
+                total_oracles = existing_data.total_oracles
+        
+        # Validate required parameters for new milestone data
+        if quorum_threshold is None or total_oracles is None:
+            typer.echo(
+                "Error: quorum_threshold and total_oracles are required when creating new milestone data",
+                err=True
+            )
+            raise typer.Exit(code=1)
+        
+        # Commit milestone completion data
+        try:
+            milestone_data = manager.commit_milestone_completion_data(
+                milestone_identifier=milestone_identifier,
+                oracle_signatures=signatures,
+                quorum_threshold=quorum_threshold,
+                total_oracles=total_oracles,
+            )
+        except ValueError as e:
+            typer.echo(f"Error: {e}", err=True)
+            raise typer.Exit(code=1)
+        
+        # Output result
+        result = {
+            "milestone_identifier": milestone_data.milestone_identifier,
+            "signature_count": milestone_data.signature_count,
+            "quorum_threshold": milestone_data.quorum_threshold,
+            "quorum_status": milestone_data.quorum_status,
+            "quorum_met": milestone_data.quorum_met,
+            "verification_timestamp": milestone_data.verification_timestamp,
+            "total_signatures": len(milestone_data.oracle_signatures),
+        }
+        
+        if output_format == "json":
+            typer.echo(json.dumps(result, indent=2))
+        else:
+            typer.echo(f"Milestone completion data committed successfully!")
+            typer.echo(f"Milestone: {milestone_data.milestone_identifier}")
+            typer.echo(f"Signatures: {milestone_data.signature_count}/{milestone_data.quorum_threshold}")
+            typer.echo(f"Quorum status: {milestone_data.quorum_status}")
+            if milestone_data.quorum_met:
+                typer.echo(f"✓ Quorum met - milestone verified!")
+            else:
+                typer.echo(f"⚠ Quorum not met - {milestone_data.quorum_threshold - milestone_data.signature_count} more signatures needed")
+        
+    except json.JSONDecodeError as e:
+        typer.echo(f"Error: Invalid JSON in signatures file: {e}", err=True)
+        raise typer.Exit(code=1)
+    except Exception as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1)
 
 
 @app.command()

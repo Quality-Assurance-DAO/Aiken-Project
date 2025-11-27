@@ -1,6 +1,8 @@
 name = "your_org/milestone_token_distribution"
 version = "0.1.0"
 description = "Milestone-based token distribution system on Cardano"
+
+[build]
 compiler = "v1.1.19"
 plutus = "v3"
 
@@ -11,5 +13,3 @@ source = "github"
 
 [test]
 pattern = "**/*_test.aiken"
-
-[config]
