@@ -4,10 +4,10 @@ use aiken/builtin.{Address, ByteArray, Int, List}
 
 /// Oracle signature record
 pub type OracleSignature {
-  oracle_address: Address
-  signature_hash: ByteArray
-  signed_data: ByteArray
-  signature_timestamp: Int
+  oracle_address: Address,
+  signature_hash: ByteArray,
+  signed_data: ByteArray,
+  signature_timestamp: Int,
 }
 
 /// Filter signatures to only those from authorized oracle addresses
@@ -45,4 +45,7 @@ pub fn count_valid_signatures(
   let unique = remove_duplicate_oracles(filtered)
   list.length(unique)
 }
+
+
+
 

@@ -1,0 +1,6 @@
+// Simple test to verify Aiken test discovery
+
+test simple_test() {
+  true
+}
+

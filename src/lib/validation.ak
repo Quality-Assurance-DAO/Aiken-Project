@@ -1,11 +1,12 @@
 // Validation helper functions for the milestone token distribution system
 
-use aiken/builtin.{Address, ByteArray, Int, Bool}
+use cardano/address.{Address}
+use aiken/collection/list
 
 /// Validate that an address is a valid Cardano address
-pub fn validate_address(address: Address) -> Bool {
+pub fn validate_address(_address: Address) -> Bool {
   // Address validation - Aiken's Address type ensures validity
-  true
+  True
 }
 
 /// Validate that a timestamp is in the future (relative to a reference time)
@@ -35,7 +36,7 @@ pub fn validate_quorum_threshold(threshold: Int, total_oracles: Int) -> Bool {
 
 /// Validate that total token amount equals sum of allocations
 pub fn validate_total_amount(total: Int, allocations: List<Int>) -> Bool {
-  let sum = list.fold(allocations, 0, fn(acc, amount) { acc + amount })
+  let sum = list.foldl(allocations, 0, fn(amount, acc) { acc + amount })
   sum == total
 }
 

@@ -1,8 +1,8 @@
 // CLI utility functions for milestone verification and contract querying
 
-use aiken/builtin.{Address, ByteArray, Int, List, Bool}
-use ../contract/oracle.{OracleSignature, count_valid_signatures}
-use ../contract/redeemer.{MilestoneVerification}
+use cardano/address.{Address}
+use contract/oracle.{count_valid_signatures}
+use contract/redeemer.{MilestoneVerification}
 
 /// Verify milestone signatures off-chain before claim
 /// T045: Implement verify-milestone command
@@ -21,15 +21,15 @@ pub fn verify_milestone(
 /// Query contract state (placeholder - requires blockchain interaction)
 /// T046: Implement query command
 pub fn query_contract_state(
-  contract_address: Address
+  _contract_address: Address
 ) -> ByteArray {
   // Placeholder - actual implementation requires Cardano CLI or API calls
-  #"contract_state_placeholder"
+  #"c0ffee"
 }
 
 /// Validate address format
 /// T051: Address format validation
-pub fn validate_address_format(address: Address) -> Bool {
+pub fn validate_address_format(_address: Address) -> Bool {
   // Address validation - Aiken's Address type ensures validity
   True
 }
@@ -48,7 +48,7 @@ pub fn validate_timestamp_validity(timestamp: Int, current_time: Int) -> Bool {
 
 /// Error handling helper
 /// T050: Comprehensive error handling with clear error messages
-pub fn handle_error(error_message: ByteArray) -> Bool {
+pub fn handle_error(_error_message: ByteArray) -> Bool {
   // In actual implementation, this would log or return error
   // Placeholder for error handling structure
   False

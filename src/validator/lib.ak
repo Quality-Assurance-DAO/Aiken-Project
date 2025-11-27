@@ -2,10 +2,10 @@
 
 use aiken/builtin.{Address, ByteArray, Int, Bool, List}
 use cardano/transaction.{Transaction}
-use ./datum.{DistributionContract, BeneficiaryAllocation}
-use ./redeemer.{ClaimRedeemer}
-use ./oracle.{count_valid_signatures}
-use ../lib/validation.{validate_amount, validate_timestamp_passed}
+use validator/datum.{DistributionContract, BeneficiaryAllocation}
+use validator/redeemer.{ClaimRedeemer}
+use validator/oracle.{count_valid_signatures}
+use lib/validation.{validate_amount, validate_timestamp_passed}
 
 /// Core validation logic shared between on-chain validator and tests
 pub fn validate(

@@ -1,4 +1,4 @@
-use aiken/transaction.{Transaction, OutputReference}
+use cardano/transaction.{Transaction, OutputReference}
 use ./datum.{DistributionContract}
 use ./redeemer.{ClaimRedeemer}
 use ./lib.{run_validator}

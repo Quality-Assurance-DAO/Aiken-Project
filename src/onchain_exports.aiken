@@ -1,10 +1,13 @@
 pub module onchain_exports {
   // Re-export modules for on-chain validator entrypoints
-  use aiken/transaction.{Transaction}
+  use cardano/transaction.{Transaction}
 
   pub use contract/datum.{DistributionContract}
   pub use contract/redeemer.{ClaimRedeemer}
   pub use contract/lib.{validate}
+  
+  // Import test modules to ensure they're part of compilation graph
+  use tests
 
   /// Helper to expose validator logic to .ak entrypoints
   pub fn run_validator(

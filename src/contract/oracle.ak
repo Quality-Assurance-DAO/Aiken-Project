@@ -1,13 +1,14 @@
 // Oracle signature verification logic for milestone verification
 
-use aiken/builtin.{Address, ByteArray, Int, List}
+use cardano/address.{Address}
+use aiken/collection/list
 
 /// Oracle signature record
 pub type OracleSignature {
-  oracle_address: Address
-  signature_hash: ByteArray
-  signed_data: ByteArray
-  signature_timestamp: Int
+  oracle_address: Address,
+  signature_hash: ByteArray,
+  signed_data: ByteArray,
+  signature_timestamp: Int,
 }
 
 /// Filter signatures to only those from authorized oracle addresses
@@ -25,13 +26,13 @@ pub fn remove_duplicate_oracles(
   signatures: List<OracleSignature>
 ) -> List<OracleSignature> {
   // Keep first occurrence of each oracle address
-  list.fold(signatures, [], fn(acc, sig) {
-    let is_duplicate = list.any(acc, fn(existing) {
+  list.foldl(signatures, [], fn(sig: OracleSignature, acc: List<OracleSignature>) {
+    let is_duplicate = list.any(acc, fn(existing: OracleSignature) {
       existing.oracle_address == sig.oracle_address
     })
-    when is_duplicate {
+    when is_duplicate is {
       True -> acc
-      False -> list.append(acc, [sig])
+      False -> list.concat(acc, [sig])
     }
   })
 }
@@ -45,7 +46,4 @@ pub fn count_valid_signatures(
   let unique = remove_duplicate_oracles(filtered)
   list.length(unique)
 }
-
-
-
 

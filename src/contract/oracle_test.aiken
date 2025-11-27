@@ -1,0 +1,94 @@
+// Unit tests for oracle signature verification logic
+
+use aiken/builtin.{Address, ByteArray, Int, List}
+use ./oracle.{OracleSignature, filter_authorized_signatures, remove_duplicate_oracles, count_valid_signatures}
+
+// T028: Unit test for valid quorum acceptance
+test valid_quorum_acceptance() {
+  // Create test oracle signatures
+  let sig1 = OracleSignature {
+    oracle_address: #"addr_test1...",
+    signature_hash: #"sig1",
+    signed_data: #"milestone-001",
+    signature_timestamp: 1735689600
+  }
+  
+  let sig2 = OracleSignature {
+    oracle_address: #"addr_test2...",
+    signature_hash: #"sig2",
+    signed_data: #"milestone-001",
+    signature_timestamp: 1735689600
+  }
+  
+  let sig3 = OracleSignature {
+    oracle_address: #"addr_test3...",
+    signature_hash: #"sig3",
+    signed_data: #"milestone-001",
+    signature_timestamp: 1735689600
+  }
+  
+  let signatures = [sig1, sig2, sig3]
+  let authorized = [#"addr_test1...", #"addr_test2...", #"addr_test3...", #"addr_test4...", #"addr_test5..."]
+  
+  // Test quorum threshold of 3 with 3 valid signatures
+  let count = count_valid_signatures(signatures, authorized)
+  count >= 3
+}
+
+// T029: Unit test for quorum failure rejection
+test quorum_failure_rejection() {
+  // Create test oracle signatures (only 2, need 3)
+  let sig1 = OracleSignature {
+    oracle_address: #"addr_test1...",
+    signature_hash: #"sig1",
+    signed_data: #"milestone-001",
+    signature_timestamp: 1735689600
+  }
+  
+  let sig2 = OracleSignature {
+    oracle_address: #"addr_test2...",
+    signature_hash: #"sig2",
+    signed_data: #"milestone-001",
+    signature_timestamp: 1735689600
+  }
+  
+  let signatures = [sig1, sig2]
+  let authorized = [#"addr_test1...", #"addr_test2...", #"addr_test3...", #"addr_test4...", #"addr_test5..."]
+  
+  // Test quorum threshold of 3 with only 2 valid signatures
+  let count = count_valid_signatures(signatures, authorized)
+  count < 3
+}
+
+// T030: Unit test for duplicate signature handling
+test duplicate_signature_handling() {
+  // Create duplicate signatures from same oracle
+  let sig1 = OracleSignature {
+    oracle_address: #"addr_test1...",
+    signature_hash: #"sig1",
+    signed_data: #"milestone-001",
+    signature_timestamp: 1735689600
+  }
+  
+  let sig2 = OracleSignature {
+    oracle_address: #"addr_test1...",  // Same oracle
+    signature_hash: #"sig2",
+    signed_data: #"milestone-001",
+    signature_timestamp: 1735689700
+  }
+  
+  let sig3 = OracleSignature {
+    oracle_address: #"addr_test2...",
+    signature_hash: #"sig3",
+    signed_data: #"milestone-001",
+    signature_timestamp: 1735689600
+  }
+  
+  let signatures = [sig1, sig2, sig3]
+  let authorized = [#"addr_test1...", #"addr_test2..."]
+  
+  // After deduplication, should count only 2 unique oracles
+  let unique = remove_duplicate_oracles(signatures)
+  list.length(unique) == 2
+}
+

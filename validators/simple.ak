@@ -1,6 +1,16 @@
+use cardano/transaction.{Transaction, OutputReference}
+use contract/datum.{DistributionContract}
+use contract/redeemer.{ClaimRedeemer}
+use contract/lib.{run_validator}
+
 validator simple {
-  spend(_datum: Option<Int>, _redeemer: Int, _utxo: Int, _tx: Int) {
-    True
+  spend(
+    datum: Option<DistributionContract>,
+    redeemer: ClaimRedeemer,
+    _utxo: OutputReference,
+    tx: Transaction
+  ) {
+    run_validator(datum, redeemer, tx)
   }
 }
 

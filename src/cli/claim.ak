@@ -1,7 +1,7 @@
 // CLI command for building and submitting claim transactions
 
-use aiken/builtin.{Address, ByteArray, Int, Bool}
-use ../contract/redeemer.{ClaimRedeemer, MilestoneVerification}
+use cardano/address.{Address}
+use contract/redeemer.{ClaimRedeemer, MilestoneVerification}
 
 /// Build claim transaction redeemer
 /// T044: Implement claim command
@@ -28,7 +28,7 @@ pub fn validate_claim_inputs(
 
 /// Validate address format
 /// T051: Address format validation
-pub fn validate_address_format(address: Address) -> Bool {
+pub fn validate_address_format(_address: Address) -> Bool {
   // Address validation - Aiken's Address type ensures validity
   True
 }
