@@ -5,6 +5,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-24
 ## Active Technologies
 - Markdown documentation, Aiken smart contracts (latest stable), Bash scripts + Aiken compiler, Cardano CLI tools, Gi (002-audit-repo)
 - Git repository (Markdown files, source code), Cardano blockchain (on-chain contracts) (002-audit-repo)
+- Python 3.8+ (spec requirement: Python 3.8 or later) + pycardano 0.9.0+ (Cardano transaction building), typer 0.9.0+ (CLI framework), websockets 11.0+ (WebSocket client for Ogmios), httpx 0.25.0+ (HTTP client for Kupo), pydantic 2.0+ (data validation), pytest with pytest-asyncio (testing) (003-python-offchain-backend)
+- Local file system (JSON files) for milestone completion data, configurable directory (default: `offchain/data/`), SQLite migration option available if needed (003-python-offchain-backend)
 
 - Aiken (latest stable) + Aiken standard library, Cardano CLI tools (with option for cardano-cli-js/lucid libraries for advanced features) (001-milestone-token-distribution)
 
@@ -24,6 +26,7 @@ tests/
 Aiken (latest stable): Follow standard conventions
 
 ## Recent Changes
+- 003-python-offchain-backend: Added Python 3.8+ (spec requirement: Python 3.8 or later) + pycardano 0.9.0+ (Cardano transaction building), typer 0.9.0+ (CLI framework), websockets 11.0+ (WebSocket client for Ogmios), httpx 0.25.0+ (HTTP client for Kupo), pydantic 2.0+ (data validation), pytest with pytest-asyncio (testing)
 - 002-audit-repo: Added Markdown documentation, Aiken smart contracts (latest stable), Bash scripts + Aiken compiler, Cardano CLI tools, Gi
 
 - 001-milestone-token-distribution: Added Aiken (latest stable) + Aiken standard library, Cardano CLI tools (with option for cardano-cli-js/lucid libraries for advanced features)

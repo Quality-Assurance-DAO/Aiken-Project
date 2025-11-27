@@ -1,0 +1,584 @@
+openapi: 3.0.3
+info:
+  title: Python Off-Chain Backend CLI API
+  description: |
+    API contract for the Python off-chain backend CLI commands.
+    This document describes the CLI interface as a REST-like API for documentation purposes.
+    Actual implementation uses typer CLI framework with subcommands.
+  version: 0.1.0
+  contact:
+    name: Aiken Project
+    url: https://github.com/your-org/Aiken-Project
+
+servers:
+  - url: cli://
+    description: CLI interface (not HTTP)
+
+tags:
+  - name: initialization
+    description: Environment initialization and connectivity
+  - name: milestone-schedule
+    description: Milestone schedule registration and management
+  - name: milestone-completion
+    description: Milestone completion data management
+  - name: status
+    description: Status queries and calculations
+  - name: transactions
+    description: Transaction building and submission
+
+paths:
+  /init:
+    post:
+      tags:
+        - initialization
+      summary: Initialize off-chain environment
+      description: |
+        Verify connectivity to cardano-node, Ogmios, and Kupo services.
+        Establishes connection and validates all required services are available.
+      operationId: initializeEnvironment
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitRequest'
+      responses:
+        '200':
+          description: Initialization successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitResponse'
+        '503':
+          description: One or more services unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /register-milestone:
+    post:
+      tags:
+        - milestone-schedule
+      summary: Register new milestone schedule
+      description: |
+        Create a new milestone-based token distribution schedule.
+        Validates inputs and generates a distribution contract datum ready for on-chain deployment.
+      operationId: registerMilestoneSchedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MilestoneScheduleRequest'
+      responses:
+        '200':
+          description: Milestone schedule created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MilestoneScheduleResponse'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /commit-milestone:
+    post:
+      tags:
+        - milestone-completion
+      summary: Commit milestone completion data
+      description: |
+        Record milestone completion information including oracle verification signatures.
+        Stores data locally and enables milestone verification tracking.
+      operationId: commitMilestoneCompletion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommitMilestoneRequest'
+      responses:
+        '200':
+          description: Milestone completion data committed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommitMilestoneResponse'
+        '400':
+          description: Invalid milestone data or signature format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /check-status:
+    get:
+      tags:
+        - status
+      summary: Check milestone completion state
+      description: |
+        Query milestone completion status for a distribution contract.
+        Uses hybrid approach: checks local cache first, verifies/updates from on-chain UTxOs if needed.
+      operationId: checkMilestoneStatus
+      parameters:
+        - name: contract_address
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Distribution contract address (bech32)
+        - name: milestone_identifier
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Specific milestone identifier (optional, returns all if omitted)
+      responses:
+        '200':
+          description: Milestone status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+        '404':
+          description: Contract not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /calculate-distribution:
+    post:
+      tags:
+        - status
+      summary: Calculate token distribution amounts
+      description: |
+        Calculate how many tokens should be distributed to a beneficiary
+        based on milestone completion status, vesting timestamps, and allocation rules.
+      operationId: calculateDistribution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculateDistributionRequest'
+      responses:
+        '200':
+          description: Distribution amount calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculateDistributionResponse'
+        '400':
+          description: Invalid input or conditions not met
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /submit-release:
+    post:
+      tags:
+        - transactions
+      summary: Submit token release transaction
+      description: |
+        Build, sign, and submit a transaction to release tokens to a beneficiary.
+        Validates all conditions before submission and returns transaction hash.
+      operationId: submitReleaseTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleaseTransactionRequest'
+      responses:
+        '200':
+          description: Transaction submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseTransactionResponse'
+        '400':
+          description: Invalid transaction or validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
+          description: Insufficient funds for fees or collateral
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    InitRequest:
+      type: object
+      properties:
+        network:
+          type: string
+          enum: [testnet, mainnet, preview, preprod]
+          default: testnet
+        ogmios_url:
+          type: string
+          default: ws://localhost:1337
+        kupo_url:
+          type: string
+          default: http://localhost:1442
+
+    InitResponse:
+      type: object
+      required:
+        - status
+        - services
+      properties:
+        status:
+          type: string
+          enum: [success, partial, failed]
+        services:
+          type: object
+          properties:
+            ogmios:
+              type: object
+              properties:
+                connected:
+                  type: boolean
+                version:
+                  type: string
+            kupo:
+              type: object
+              properties:
+                connected:
+                  type: boolean
+                sync_status:
+                  type: string
+            cardano_node:
+              type: object
+              properties:
+                connected:
+                  type: boolean
+                network:
+                  type: string
+
+    MilestoneScheduleRequest:
+      type: object
+      required:
+        - token_policy_id
+        - beneficiary_allocations
+        - oracle_addresses
+        - quorum_threshold
+      properties:
+        token_policy_id:
+          type: string
+          description: Policy ID of token to distribute (hex)
+        beneficiary_allocations:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/BeneficiaryAllocationInput'
+        oracle_addresses:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            description: Oracle address (bech32)
+        quorum_threshold:
+          type: integer
+          minimum: 1
+          description: Minimum oracle signatures required
+        contract_metadata:
+          type: object
+          description: Additional metadata
+
+    BeneficiaryAllocationInput:
+      type: object
+      required:
+        - beneficiary_address
+        - token_amount
+        - milestone_identifier
+        - vesting_timestamp
+      properties:
+        beneficiary_address:
+          type: string
+          description: Cardano address (bech32)
+        token_amount:
+          type: integer
+          minimum: 1
+          description: Token amount in smallest unit
+        milestone_identifier:
+          type: string
+          description: Unique milestone identifier
+        vesting_timestamp:
+          type: integer
+          description: POSIXTime timestamp for vesting
+
+    MilestoneScheduleResponse:
+      type: object
+      required:
+        - datum
+        - contract_address
+      properties:
+        datum:
+          type: object
+          description: Distribution contract datum (ready for on-chain deployment)
+        contract_address:
+          type: string
+          description: Calculated contract address (bech32)
+        total_token_amount:
+          type: integer
+          description: Total tokens across all allocations
+
+    CommitMilestoneRequest:
+      type: object
+      required:
+        - milestone_identifier
+        - oracle_signatures
+      properties:
+        milestone_identifier:
+          type: string
+        oracle_signatures:
+          type: array
+          items:
+            $ref: '#/components/schemas/OracleSignatureInput'
+        quorum_threshold:
+          type: integer
+          description: Required signature count (if not in existing data)
+        total_oracles:
+          type: integer
+          description: Total authorized oracles (if not in existing data)
+
+    OracleSignatureInput:
+      type: object
+      required:
+        - oracle_address
+        - signature
+        - signed_data
+        - signature_timestamp
+      properties:
+        oracle_address:
+          type: string
+          description: Oracle address (bech32)
+        signature:
+          type: string
+          description: Ed25519 signature (hex)
+        signed_data:
+          type: string
+          description: Data that was signed (hex)
+        signature_timestamp:
+          type: integer
+          description: POSIXTime when signed
+
+    CommitMilestoneResponse:
+      type: object
+      required:
+        - milestone_identifier
+        - signature_count
+        - quorum_status
+      properties:
+        milestone_identifier:
+          type: string
+        signature_count:
+          type: integer
+          description: Number of unique oracle signatures
+        quorum_status:
+          type: string
+          enum: [pending, met, exceeded]
+        file_path:
+          type: string
+          description: Path to stored milestone data file
+
+    StatusResponse:
+      type: object
+      required:
+        - contract_address
+        - milestones
+      properties:
+        contract_address:
+          type: string
+        milestones:
+          type: array
+          items:
+            $ref: '#/components/schemas/MilestoneStatus'
+        contract_state:
+          $ref: '#/components/schemas/ContractState'
+
+    MilestoneStatus:
+      type: object
+      required:
+        - milestone_identifier
+        - verified
+        - quorum_status
+      properties:
+        milestone_identifier:
+          type: string
+        verified:
+          type: boolean
+          description: Whether milestone is verified and claimable
+        quorum_status:
+          type: string
+          enum: [pending, met, exceeded]
+        signature_count:
+          type: integer
+        quorum_threshold:
+          type: integer
+        vesting_passed:
+          type: boolean
+          description: Whether vesting timestamp has passed
+
+    ContractState:
+      type: object
+      properties:
+        total_token_amount:
+          type: integer
+        remaining_token_amount:
+          type: integer
+        claimed_count:
+          type: integer
+        unclaimed_count:
+          type: integer
+        beneficiary_allocations:
+          type: array
+          items:
+            $ref: '#/components/schemas/BeneficiaryAllocationState'
+
+    BeneficiaryAllocationState:
+      type: object
+      required:
+        - beneficiary_address
+        - token_amount
+        - milestone_identifier
+        - vesting_timestamp
+        - claimed
+      properties:
+        beneficiary_address:
+          type: string
+        token_amount:
+          type: integer
+        milestone_identifier:
+          type: string
+        vesting_timestamp:
+          type: integer
+        claimed:
+          type: boolean
+
+    CalculateDistributionRequest:
+      type: object
+      required:
+        - contract_address
+        - beneficiary_address
+      properties:
+        contract_address:
+          type: string
+        beneficiary_address:
+          type: string
+        milestone_identifier:
+          type: string
+          description: Specific milestone (optional, calculates all if omitted)
+
+    CalculateDistributionResponse:
+      type: object
+      required:
+        - beneficiary_address
+        - claimable_amount
+        - allocations
+      properties:
+        beneficiary_address:
+          type: string
+        claimable_amount:
+          type: integer
+          description: Total claimable tokens across all eligible allocations
+        allocations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllocationCalculation'
+
+    AllocationCalculation:
+      type: object
+      required:
+        - milestone_identifier
+        - token_amount
+        - claimable
+        - reason
+      properties:
+        milestone_identifier:
+          type: string
+        token_amount:
+          type: integer
+        claimable:
+          type: boolean
+        reason:
+          type: string
+          enum: [vesting_not_passed, milestone_not_verified, already_claimed, claimable]
+        vesting_timestamp:
+          type: integer
+        vesting_passed:
+          type: boolean
+
+    ReleaseTransactionRequest:
+      type: object
+      required:
+        - contract_address
+        - beneficiary_address
+        - beneficiary_index
+        - milestone_identifier
+        - signing_key_path
+      properties:
+        contract_address:
+          type: string
+        beneficiary_address:
+          type: string
+        beneficiary_index:
+          type: integer
+          minimum: 0
+        milestone_identifier:
+          type: string
+        signing_key_path:
+          type: string
+          description: Path to wallet signing key file
+        collateral_amount:
+          type: integer
+          description: Collateral amount (auto-calculated if omitted)
+
+    ReleaseTransactionResponse:
+      type: object
+      required:
+        - transaction_hash
+        - status
+      properties:
+        transaction_hash:
+          type: string
+          description: Transaction hash (hex)
+        status:
+          type: string
+          enum: [submitted, pending, confirmed]
+        fee_estimate:
+          type: integer
+          description: Transaction fee (lovelace)
+        collateral_amount:
+          type: integer
+          description: Collateral amount (lovelace)
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error details
+        field_errors:
+          type: object
+          description: Field-level validation errors
+
