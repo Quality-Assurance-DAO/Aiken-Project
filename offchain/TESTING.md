@@ -107,6 +107,9 @@ Integration tests test CLI commands end-to-end:
 - `test_init.py` - Environment initialization
 - `test_register_milestone.py` - Milestone registration
 - `test_commit_milestone.py` - Milestone completion data commitment
+- `test_check_status.py` - Contract status checking
+- `test_infrastructure_connectivity.py` - Infrastructure connectivity tests (node socket, Ogmios, Kupo)
+- `test_transaction_submission.py` - End-to-end transaction submission flows
 
 **Note:** Some integration tests may require services to be running. They will skip gracefully if services are unavailable.
 
@@ -226,6 +229,49 @@ Integration tests may skip if services aren't available. This is expected behavi
 - Cardano node is running (if required)
 - Ogmios service is available (if required)
 - Kupo service is available (if required)
+
+### Infrastructure Connectivity Tests
+
+The `test_infrastructure_connectivity.py` file contains tests for:
+- **Node Socket Connectivity**: Tests direct connectivity to the Cardano node socket file
+- **Ogmios Querying**: Tests that Ogmios can query the Cardano node via WebSocket
+- **Kupo Indexing**: Tests that Kupo can index and query UTXOs from the node
+- **Health Checks**: Comprehensive health check of all infrastructure components
+
+**Run infrastructure connectivity tests:**
+```bash
+pytest tests/integration/test_infrastructure_connectivity.py -v
+```
+
+**Environment variables for infrastructure tests:**
+```bash
+export OGMIOS_URL=ws://localhost:1337
+export KUPO_URL=http://localhost:1442
+export CARDANO_NODE_SOCKET_PATH=/path/to/node.socket
+```
+
+### Transaction Submission Tests
+
+The `test_transaction_submission.py` file contains tests for:
+- **Transaction Building**: Tests building transactions using cardano-cli
+- **Transaction Signing**: Tests signing transactions with signing keys
+- **Ogmios Submission**: Tests submitting transactions via Ogmios WebSocket API
+- **Cardano CLI Submission**: Tests submitting transactions via cardano-cli directly
+- **Kupo Query After Submission**: Tests that Kupo can query UTXOs after transactions
+
+**Run transaction submission tests:**
+```bash
+pytest tests/integration/test_transaction_submission.py -v
+```
+
+**Prerequisites for transaction submission tests:**
+- Cardano node running and synced
+- Ogmios service available
+- Kupo service available
+- Valid signing keys (`payment.skey`, `payment.vkey`)
+- Testnet funds in the payment address
+
+**Note:** Transaction submission tests may skip if prerequisites are not met. Some tests perform dry-runs to avoid spending funds unnecessarily.
 
 ### View Test Coverage
 
