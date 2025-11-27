@@ -258,11 +258,7 @@ aiken-distribution query \
 
 ### Check Transaction Status
 
-```bash
-cardano-cli query tx \
-  --tx-id <transaction-hash> \
-  --testnet-magic 1097911063
-```
+**Note:** Cardano CLI doesn't support querying transactions directly by hash. Use block explorers (e.g., https://preprod.cardanoscan.io/transaction/<transaction-hash>) or verify transactions by checking UTXOs at the addresses involved.
 
 ### Monitor Contract UTXO
 
