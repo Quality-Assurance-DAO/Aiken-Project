@@ -27,3 +27,4 @@ def test_init_command_with_real_services():
     except Exception:
         pytest.skip("Services not available")
 
+

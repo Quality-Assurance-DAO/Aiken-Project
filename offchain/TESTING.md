@@ -123,7 +123,7 @@ pytest tests/integration/ -v
 The `test_init.py` file contains an integration test that verifies the `init` command works correctly:
 
 **What it does:**
-- Executes the CLI command `python cli.py init --network testnet` as a subprocess
+- Executes the CLI command `python3 cli.py init --network testnet` as a subprocess (or `python` if available)
 - Verifies the command runs without crashing (smoke test)
 - Checks that the command handles both success and failure scenarios gracefully
 

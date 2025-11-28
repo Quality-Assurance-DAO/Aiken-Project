@@ -177,3 +177,4 @@ class ReleaseTransactionInput(BaseModel):
         None, description="Collateral amount (auto-calculated if None)"
     )
 
+

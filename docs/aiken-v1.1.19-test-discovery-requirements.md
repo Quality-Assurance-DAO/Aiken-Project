@@ -176,3 +176,4 @@ tests/                         # ❌ Not auto-discovered
 
 **Key Takeaway**: In Aiken v1.1.19, tests are automatically discovered from modules in `src/` that are part of the compilation graph. Ensure test modules are imported or referenced to guarantee discovery.
 
+

@@ -61,3 +61,4 @@ def test_register_milestone_command():
         except Exception as e:
             pytest.skip(f"Command failed: {e}")
 
+

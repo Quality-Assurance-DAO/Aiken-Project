@@ -82,7 +82,13 @@ fi
 source venv/bin/activate
 
 # Install dependencies if needed
-if ! python -c "import pytest" 2>/dev/null; then
+# After venv activation, python should be available, but use python3 as fallback
+PYTHON_CMD="python3"
+if command -v python &> /dev/null; then
+    PYTHON_CMD="python"
+fi
+
+if ! $PYTHON_CMD -c "import pytest" 2>/dev/null; then
     echo "Installing test dependencies..."
     pip install -q -r requirements.txt pytest pytest-asyncio
 fi
@@ -105,7 +111,7 @@ echo ""
 
 # Test connectivity first
 echo "Testing connectivity..."
-python cli.py init \
+$PYTHON_CMD cli.py init \
     --network preprod \
     --ogmios-url "$OGMIOS_URL" \
     --kupo-url "$KUPO_URL" \

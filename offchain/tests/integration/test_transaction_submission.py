@@ -43,16 +43,26 @@ async def test_transaction_build_and_submit_via_ogmios():
     except Exception:
         pytest.skip("Ogmios not available")
     
-    # Check for cardano-cli availability
-    try:
-        result = subprocess.run(
-            ["cardano-cli", "--version"],
-            capture_output=True,
-            timeout=5
-        )
-        if result.returncode != 0:
-            pytest.skip("cardano-cli not available")
-    except (FileNotFoundError, subprocess.TimeoutExpired):
+    # Check for cardano-cli availability (check both PATH and bin directory)
+    cardano_cli_path = None
+    project_root = Path(__file__).parent.parent.parent.parent
+    bin_cli_path = project_root / "bin" / "cardano-cli"
+    
+    if bin_cli_path.exists():
+        cardano_cli_path = str(bin_cli_path)
+    else:
+        try:
+            result = subprocess.run(
+                ["cardano-cli", "--version"],
+                capture_output=True,
+                timeout=5
+            )
+            if result.returncode == 0:
+                cardano_cli_path = "cardano-cli"
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
+    
+    if not cardano_cli_path:
         pytest.skip("cardano-cli not available")
     
     # Check for signing key
@@ -73,7 +83,7 @@ async def test_transaction_build_and_submit_via_ogmios():
         # Build address
         result = subprocess.run(
             [
-                "cardano-cli", "address", "build",
+                cardano_cli_path, "address", "build",
                 "--payment-verification-key-file", str(vkey_path),
                 "--testnet-magic", NETWORK_MAGIC,
                 "--out-file", str(addr_path)
@@ -90,7 +100,7 @@ async def test_transaction_build_and_submit_via_ogmios():
     # Query UTXOs for the address
     result = subprocess.run(
         [
-            "cardano-cli", "query", "utxo",
+            cardano_cli_path, "query", "utxo",
             "--address", address,
             "--testnet-magic", NETWORK_MAGIC,
             "--socket-path", str(socket_path)
@@ -124,7 +134,7 @@ async def test_transaction_build_and_submit_via_ogmios():
         # Build transaction
         build_result = subprocess.run(
             [
-                "cardano-cli", "transaction", "build",
+                cardano_cli_path, "transaction", "build",
                 "--testnet-magic", NETWORK_MAGIC,
                 "--socket-path", str(socket_path),
                 "--tx-in", f"{tx_hash}#{tx_ix}",
@@ -143,7 +153,7 @@ async def test_transaction_build_and_submit_via_ogmios():
         # Sign transaction
         sign_result = subprocess.run(
             [
-                "cardano-cli", "transaction", "sign",
+                cardano_cli_path, "transaction", "sign",
                 "--tx-body-file", str(tx_unsigned),
                 "--signing-key-file", str(signing_key_path),
                 "--testnet-magic", NETWORK_MAGIC,
@@ -190,16 +200,26 @@ def test_transaction_submission_via_cardano_cli():
     if not socket_path.exists():
         pytest.skip("Node socket not available")
     
-    # Check for cardano-cli
-    try:
-        result = subprocess.run(
-            ["cardano-cli", "--version"],
-            capture_output=True,
-            timeout=5
-        )
-        if result.returncode != 0:
-            pytest.skip("cardano-cli not available")
-    except (FileNotFoundError, subprocess.TimeoutExpired):
+    # Check for cardano-cli availability (check both PATH and bin directory)
+    cardano_cli_path = None
+    project_root = Path(__file__).parent.parent.parent.parent
+    bin_cli_path = project_root / "bin" / "cardano-cli"
+    
+    if bin_cli_path.exists():
+        cardano_cli_path = str(bin_cli_path)
+    else:
+        try:
+            result = subprocess.run(
+                ["cardano-cli", "--version"],
+                capture_output=True,
+                timeout=5
+            )
+            if result.returncode == 0:
+                cardano_cli_path = "cardano-cli"
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
+    
+    if not cardano_cli_path:
         pytest.skip("cardano-cli not available")
     
     # Check for signing key
@@ -217,7 +237,7 @@ def test_transaction_submission_via_cardano_cli():
     if not addr_path.exists():
         result = subprocess.run(
             [
-                "cardano-cli", "address", "build",
+                cardano_cli_path, "address", "build",
                 "--payment-verification-key-file", str(vkey_path),
                 "--testnet-magic", NETWORK_MAGIC,
                 "--out-file", str(addr_path)
@@ -234,7 +254,7 @@ def test_transaction_submission_via_cardano_cli():
     # Query UTXOs
     result = subprocess.run(
         [
-            "cardano-cli", "query", "utxo",
+            cardano_cli_path, "query", "utxo",
             "--address", address,
             "--testnet-magic", NETWORK_MAGIC,
             "--socket-path", str(socket_path)
@@ -266,7 +286,7 @@ def test_transaction_submission_via_cardano_cli():
         # Build transaction
         build_result = subprocess.run(
             [
-                "cardano-cli", "transaction", "build",
+                cardano_cli_path, "transaction", "build",
                 "--testnet-magic", NETWORK_MAGIC,
                 "--socket-path", str(socket_path),
                 "--tx-in", f"{tx_hash}#{tx_ix}",
@@ -285,7 +305,7 @@ def test_transaction_submission_via_cardano_cli():
         # Sign transaction
         sign_result = subprocess.run(
             [
-                "cardano-cli", "transaction", "sign",
+                cardano_cli_path, "transaction", "sign",
                 "--tx-body-file", str(tx_unsigned),
                 "--signing-key-file", str(signing_key_path),
                 "--testnet-magic", NETWORK_MAGIC,

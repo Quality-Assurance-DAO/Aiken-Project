@@ -53,20 +53,23 @@ async def test_ogmios_query_node():
     try:
         # Test connectivity
         connectivity = await client.check_connectivity()
-        assert connectivity["connected"], \
-            f"Ogmios connectivity check failed: {connectivity.get('error', 'Unknown error')}"
+        if not connectivity.get("connected"):
+            pytest.skip(f"Ogmios not connected: {connectivity.get('error', 'Unknown error')}")
         
         # Test querying protocol parameters
         await client.connect()
-        params = await client.query_protocol_parameters()
-        assert params is not None, "Failed to query protocol parameters"
-        assert "minFeeA" in params or "protocolVersion" in params, \
-            "Protocol parameters response missing expected fields"
+        try:
+            params = await client.query_protocol_parameters()
+            assert params is not None, "Failed to query protocol parameters"
+            assert "minFeeA" in params or "protocolVersion" in params or "minFeeCoefficient" in params, \
+                f"Protocol parameters response missing expected fields. Got keys: {list(params.keys()) if params else 'None'}"
+        finally:
+            await client.disconnect()
         
+    except AssertionError:
+        raise
     except Exception as e:
         pytest.skip(f"Ogmios service not available: {e}")
-    finally:
-        await client.disconnect()
 
 
 @pytest.mark.integration

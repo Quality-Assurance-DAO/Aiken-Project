@@ -38,18 +38,21 @@ docker-compose up -d
 ### 2. Initialize Environment
 
 ```bash
-python cli.py init --network testnet
+# Use python3 (or python if available in your environment)
+python3 cli.py init --network testnet
 ```
 
 ### 3. Register Milestone Schedule
 
 ```bash
-python cli.py register-milestone \
+python3 cli.py register-milestone \
   --token-policy-id "abc123..." \
   --beneficiary-allocations allocations.json \
   --oracle-addresses addr1...,addr2... \
   --quorum-threshold 2
 ```
+
+**Note**: On macOS, use `python3`. In a virtual environment, `python` may also work.
 
 ## CLI Commands
 

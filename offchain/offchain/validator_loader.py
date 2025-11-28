@@ -69,3 +69,4 @@ class ValidatorLoader:
         validator = self.load_validator(validator_name)
         return validator.get("redeemerSchema")
 
+

@@ -129,8 +129,8 @@ storage:
 cd offchain
 source venv/bin/activate
 
-# Test connectivity
-python cli.py init \
+# Test connectivity (use python3 on macOS if python is not available)
+python3 cli.py init \
   --network preprod \
   --ogmios-url ws://localhost:1337 \
   --kupo-url http://localhost:1442 \

@@ -68,3 +68,4 @@ def test_kupo_client_parse_datum_from_utxo():
     assert datum is not None
     assert datum["cbor"] == "1234"
 
+

@@ -95,3 +95,4 @@ def check_cardano_node_connectivity(socket_path: Optional[str]) -> bool:
     socket_file = Path(socket_path)
     return socket_file.exists() and socket_file.is_socket()
 
+

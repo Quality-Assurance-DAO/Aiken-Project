@@ -126,11 +126,11 @@ def test_commit_milestone_command_incremental():
                 cwd=Path(__file__).parent.parent.parent,
                 capture_output=True,
                 text=True,
-                timeout=10,
+                timeout=30,
                 env=os.environ.copy(),
             )
             
-            assert result1.returncode == 0
+            assert result1.returncode == 0, f"First commit failed: {result1.stderr}\nOutput: {result1.stdout}"
             output1 = json.loads(result1.stdout)
             assert output1["signature_count"] == 1
             
@@ -173,11 +173,11 @@ def test_commit_milestone_command_incremental():
                 cwd=Path(__file__).parent.parent.parent,
                 capture_output=True,
                 text=True,
-                timeout=10,
+                timeout=30,
                 env=os.environ.copy(),
             )
             
-            assert result2.returncode == 0
+            assert result2.returncode == 0, f"Second commit failed: {result2.stderr}\nOutput: {result2.stdout}"
             output2 = json.loads(result2.stdout)
             assert output2["signature_count"] == 3
             assert output2["quorum_status"] == "met"
@@ -186,9 +186,9 @@ def test_commit_milestone_command_incremental():
         except subprocess.TimeoutExpired:
             pytest.skip("Command timeout")
         except json.JSONDecodeError as e:
-            pytest.fail(f"Invalid JSON output: {e}\nOutput: {result1.stdout if 'result1' in locals() else result2.stdout}")
+            pytest.fail(f"Invalid JSON output: {e}\nOutput: {result1.stdout if 'result1' in locals() else (result2.stdout if 'result2' in locals() else 'N/A')}\nError: {result1.stderr if 'result1' in locals() else (result2.stderr if 'result2' in locals() else 'N/A')}")
         except Exception as e:
-            pytest.skip(f"Command failed: {e}")
+            pytest.fail(f"Command failed: {e}\nOutput: {result1.stdout if 'result1' in locals() else (result2.stdout if 'result2' in locals() else 'N/A')}\nError: {result1.stderr if 'result1' in locals() else (result2.stderr if 'result2' in locals() else 'N/A')}")
         finally:
             # Clean up environment
             os.environ.pop("DATA_DIRECTORY", None)

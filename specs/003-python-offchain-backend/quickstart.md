@@ -71,7 +71,8 @@ ls -la plutus.json
 Initialize and verify connectivity to all services:
 
 ```bash
-python cli.py init --network testnet
+# Use python3 (or python if available in your environment)
+python3 cli.py init --network testnet
 ```
 
 **Expected output**:
@@ -91,7 +92,7 @@ python cli.py init --network testnet
 Create a new milestone schedule for token distribution:
 
 ```bash
-python cli.py register-milestone \
+python3 cli.py register-milestone \
   --token-policy-id "abc123..." \
   --beneficiary-allocations allocations.json \
   --oracle-addresses addr1...,addr2...,addr3... \
@@ -142,7 +143,7 @@ cardano-cli transaction submit --tx-file tx.signed --testnet-magic 1097911063
 Record milestone completion with oracle signatures:
 
 ```bash
-python cli.py commit-milestone \
+python3 cli.py commit-milestone \
   --milestone-identifier "milestone-001" \
   --oracle-signatures signatures.json \
   --quorum-threshold 2 \
@@ -174,7 +175,7 @@ python cli.py commit-milestone \
 Query milestone completion status:
 
 ```bash
-python cli.py check-status \
+python3 cli.py check-status \
   --contract-address "addr1..." \
   --milestone-identifier "milestone-001"
 ```
@@ -207,7 +208,7 @@ python cli.py check-status \
 Calculate claimable tokens for a beneficiary:
 
 ```bash
-python cli.py calculate-distribution \
+python3 cli.py calculate-distribution \
   --contract-address "addr1..." \
   --beneficiary-address "addr1..."
 ```
@@ -234,7 +235,7 @@ python cli.py calculate-distribution \
 Build, sign, and submit a token release transaction:
 
 ```bash
-python cli.py submit-release \
+python3 cli.py submit-release \
   --contract-address "addr1..." \
   --beneficiary-address "addr1..." \
   --beneficiary-index 0 \
@@ -288,7 +289,7 @@ offchain/data/
 Change data directory:
 
 ```bash
-python cli.py --data-dir /custom/path/to/data <command>
+python3 cli.py --data-dir /custom/path/to/data <command>
 ```
 
 ## Common Workflows
@@ -314,7 +315,7 @@ python cli.py --data-dir /custom/path/to/data <command>
 1. Commit multiple milestones:
    ```bash
    for milestone in milestone-001 milestone-002 milestone-003; do
-     python cli.py commit-milestone \
+     python3 cli.py commit-milestone \
        --milestone-identifier "$milestone" \
        --oracle-signatures "signatures_${milestone}.json"
    done

@@ -135,7 +135,13 @@ def register_milestone(
         )
         
         # Validate schedule
-        storage_config = DataStorageConfiguration()
+        import os
+        data_dir = Path(os.getenv("DATA_DIRECTORY", "offchain/data"))
+        storage_config = DataStorageConfiguration(
+            data_directory=data_dir,
+            milestones_directory=data_dir / "milestones",
+            cache_directory=data_dir / "cache",
+        )
         manager = MilestoneManager(storage_config.data_directory)
         errors = manager.validate_milestone_schedule(schedule)
         
@@ -226,7 +232,13 @@ def commit_milestone(
             raise typer.Exit(code=1)
         
         # Initialize milestone manager
-        storage_config = DataStorageConfiguration()
+        import os
+        data_dir = Path(os.getenv("DATA_DIRECTORY", "offchain/data"))
+        storage_config = DataStorageConfiguration(
+            data_directory=data_dir,
+            milestones_directory=data_dir / "milestones",
+            cache_directory=data_dir / "cache",
+        )
         manager = MilestoneManager(storage_config.data_directory)
         
         # Check if milestone data already exists
@@ -307,7 +319,13 @@ def check_status(
     
     try:
         # Initialize clients
-        storage_config = DataStorageConfiguration()
+        import os
+        data_dir = Path(os.getenv("DATA_DIRECTORY", "offchain/data"))
+        storage_config = DataStorageConfiguration(
+            data_directory=data_dir,
+            milestones_directory=data_dir / "milestones",
+            cache_directory=data_dir / "cache",
+        )
         manager = MilestoneManager(storage_config.data_directory)
         kupo_client = KupoClient(kupo_url)
         

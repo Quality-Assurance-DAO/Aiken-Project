@@ -4,13 +4,18 @@ services:
     container_name: ogmios-preprod
     volumes:
       - ./preprod-socket:/ipc:ro
+      - ./share/preprod:/config:ro
     ports:
       - "1337:1337"
-    environment:
-      - OGMIOS_HOST=0.0.0.0
-      - OGMIOS_PORT=1337
-      - OGMIOS_NODE_SOCKET=/ipc/node.socket
-      - OGMIOS_NODE_NETWORK=preprod
+    command:
+      - --node-socket
+      - /ipc/node.socket
+      - --node-config
+      - /config/config.json
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "1337"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:1337/health"]
@@ -27,14 +32,21 @@ services:
       - kupo-preprod-db:/data
     ports:
       - "1442:1442"
-    environment:
-      - KUPO_HOST=0.0.0.0
-      - KUPO_PORT=1442
-      - KUPO_NODE_SOCKET=/ipc/node.socket
-      - KUPO_NODE_CONFIG=/config/config.json
-      - KUPO_DB_PATH=/data
-      - KUPO_SERVER_HOST=0.0.0.0
-      - KUPO_SERVER_PORT=1442
+    command:
+      - --node-socket
+      - /ipc/node.socket
+      - --node-config
+      - /config/config.json
+      - --workdir
+      - /data
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "1442"
+      - --since
+      - "origin"
+      - --match
+      - "*"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:1442/health"]
